@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SSV Vogelstang Volleyball – Vereinskollektion (Sammelbestellung)</title>
+  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="SSV Vogelstang Volleyball – Vereinskollektion 2025. Sammelbestellung für Trainingsbekleidung und Team-Artikel.">
+</head>
+<body>
+  <div class="topbar">
+    <div class="container">
+      <div class="topbar-left">SSV Vogelstang Volleyball — Vereinskollektion 2025</div>
+      <div class="topbar-right"><a href="https://ssv-volleyball.de" target="_blank" rel="noopener">ssv-volleyball.de</a></div>
+    </div>
+  </div>
+
+  <header class="header-with-banner">
+    <div class="container nav-wrap">
+      <a class="logo" href="#">
+        <img src="/media/SSV_Logo_mini-1320x500.jpg" alt="SSV Logo" loading="lazy">
+      </a>
+      <nav class="main-nav">
+        <a href="#kollektion">Kollektion</a>
+        <a href="#produkte">Produkte</a>
+        <a href="#warenkorb">Warenkorb</a>
+      </nav>
+    </div>
+    <div class="hero">
+      <div class="container">
+        <h1>SSV Vogelstang Volleyball · Vereinskollektion 2025</h1>
+        <p class="subtitle">Sammelbestellung (ohne Online-Zahlung). Auswahl treffen → Warenkorb → Abschicken. Initialen optional (+1,50&nbsp;€).</p>
+        <p class="hero-cta"><a href="#kollektion" class="pdf-button">Kollektion ansehen</a></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="note">
+      <strong>Hinweis:</strong> Dies ist ein internes Bestell-Portal der Volleyball-Abteilung.
+      Preise laut Kollektion. Zahlung &amp; Verteilung erfolgen <em>über den Verein</em>
+      nach der Sammelbestellung.
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <div id="kollektion" class="box" style="flex:1 1 100%">
+        <h2>Kollektion (PDF)</h2>
+        <div class="muted" style="margin-top:6px">Die vollständige Kollektion als PDF — öffne sie im neuen Tab oder scrolle in der Vorschau.</div>
+        <div style="margin-top:10px">
+          <a href="/media/Vollständige-kollektion-2025.pdf" target="_blank" class="pdf-button">Öffne PDF in neuem Tab</a>
+          <iframe class="pdf-viewer" src="/media/Vollständige-kollektion-2025.pdf" title="Kollektion PDF"></iframe>
+        </div>
+      </div>
+      <div class="box" id="produkte" style="display:flex;flex-direction:column">
+        <h2>Produkte</h2>
+        <div id="productGrid" class="grid"></div>
+      </div>
+
+      <div class="box" id="warenkorb">
+        <h2>Warenkorb</h2>
+        <table id="cartTable">
+          <thead>
+            <tr>
+              <th>Artikel</th>
+              <th>Größe</th>
+              <th>Farbe</th>
+              <th>Menge</th>
+              <th>Preis</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4">Zwischensumme</td>
+              <td id="subtotal">0,00 €</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td colspan="4">Initialen/Nummern</td>
+              <td id="initialsCost">0,00 €</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td colspan="4">Gesamt</td>
+              <td id="total">0,00 €</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <h2 style="margin-top:18px">Besteller:in</h2>
+        <div class="row">
+          <div style="flex:1 1 180px">
+            <label>Vor- &amp; Nachname</label>
+            <input id="buyerName" type="text" required placeholder="Max Mustermann">
+          </div>
+          <div style="flex:1 1 160px">
+            <label>E-Mail</label>
+            <input id="buyerEmail" type="text" required placeholder="tom@ssv-volleyball.de">
+          </div>
+          <div style="flex:1 1 140px">
+            <label>Team/Gruppe</label>
+            <input id="buyerTeam" type="text" placeholder="z. B. Damen, U16, U14">
+          </div>
+        </div>
+
+        <div class="row">
+          <div style="flex:1 1 160px">
+            <label>Initialen oder kl. Nr. (+1,50&nbsp;€ je Artikel, optional)</label>
+            <input id="initials" type="text" placeholder="z. B. AM, #12">
+          </div>
+        <div style="margin-top:10px">
+          <label for="notes">Bemerkungen (optional)</label>
+          <input id="notes" type="text"
+                 placeholder="z. B. Abholung beim Training, alternative Größe, etc.">
+        </div>
+
+        <div class="actions" style="margin-top:12px">
+          <button id="submitBtn">Bestellung abschicken</button>
+          <div id="status" class="muted" style="margin-top:6px"></div>
+        </div>
+
+        <p class="footer">
+          Fragen? Abteilungsleitung / Orga-Team ansprechen. Stand: 2025.
+        </p>
+      </div>
+    </div>
+
+    <p class="legend">
+      Größen: Kinder (140/152/164) &amp; Erwachsene (XS–3XL bzw. 4XL, je nach Artikel).
+      Farben bei T-Shirts: schwarz oder rot .
+    </p>
+  </div>
+
+<script>
+const APPS_SCRIPT_ENDPOINT = "PASTE_YOUR_APPS_SCRIPT_WEBAPP_URL_HERE";
+
+const PRODUCTS = [
+  {
+    id: "lead-zip-jacket",
+    name: "Hummel Lead 2.0 – Track Zip Jacket",
+    colors: ["Schwarz"],
+    sizes: {
+      "Kinder": ["140","152","164"],
+      "Erwachsene": ["XS","S","M","L","XL","XXL","3XL"]
+    },
+    priceByGroup: {"Kinder": 32.0, "Erwachsene": 35.0},
+    initialsPossible: true
+  },
+  {
+    id: "lead-track-pants",
+    name: "Hummel Lead 2.0 – Track Pants",
+    colors: ["schwarz"],
+    sizes: {
+      "Kinder": ["140","152","164"],
+      "Erwachsene": ["XS","S","M","L","XL","XXL","3XL"]
+    },
+    priceByGroup: {"Kinder": 24.0, "Erwachsene": 27.0},
+    initialsPossible: true
+  },
+  {
+    id: "lead-zip-hoodie",
+    name: "Hummel Lead 2.0 – Zip Hoodie",
+    colors: ["schwarz"],
+    sizes: {
+      "Kinder": ["140","152","164"],
+      "Erwachsene": ["S","M","L","XL","XXL","3XL"]
+    },
+    priceByGroup: {"Kinder": 41.0, "Erwachsene": 44.0},
+    initialsPossible: true
+  },
+  {
+    id: "go-hoodie",
+    name: "Hummel GO 2.0 – Hoodie (Schwarz)",
+    colors: ["Schwarz"],
+    sizes: {
+      "Kinder": ["140","152","164"],
+      "Erwachsene": ["S","M","L","XL","XXL","3XL"]
+    },
+    priceByGroup: {"Kinder": 38.0, "Erwachsene": 41.0},
+    initialsPossible: true
+  },
+  {
+    id: "go-tshirt",
+    name: "Hummel GO 2.0 – T-Shirt",
+    colors: ["Schwarz","Rot"],
+    sizes: {
+      "Kinder": ["140","152","164"],
+      "Erwachsene": ["S","M","L","XL","XXL","3XL"]
+    },
+    priceByGroup: {"Kinder": 15.5, "Erwachsene": 17.0},
+    initialsPossible: true
+  },
+  {
+    id: "essential-poly-tshirt",
+    name: "Hummel Essential Polyester – T-Shirt",
+    colors: ["Schwarz","Rot"],
+    sizes: {
+      "Kinder": ["140","152","164"],
+      "Erwachsene": ["S","M","L","XL","XXL","3XL","4XL"]
+    },
+    priceByGroup: {"Kinder": 15.0, "Erwachsene": 15.5},
+    initialsPossible: true
+  }
+];
+
+const INITIALS_PRICE = 1.5;
+
+ function formatEUR(v){
+   return (v).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+}
+
+const grid = document.getElementById('productGrid');
+
+PRODUCTS.forEach(p => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <h3>${p.name}</h3>
+    <div class="muted">
+      ${p.colors.map(c => `<span class="badge">${c}</span>`).join(' ')}
+    </div>
+    <div class="controls">
+      <label>Größen-Gruppe</label>
+      <select class="groupSel">
+        ${Object.keys(p.sizes).map(g => `<option value="${g}">${g}</option>`).join('')}
+      </select>
+
+      <label>Größe</label>
+      <select class="sizeSel"></select>
+
+      <label>Farbe</label>
+      <select class="colorSel">
+        ${p.colors.map(c=>`<option>${c}</option>`).join('')}
+      </select>
+
+      <label>Menge</label>
+      <input class="qtySel" type="number" min="1" value="1">
+
+      ${
+        p.initialsPossible
+          ? `<div class="switch">
+               <input type="checkbox" class="withInitials">
+               <label>mit Initialen (+1,50 €)</label>
+             </div>`
+          : ``
+      }
+    </div>
+
+    <div class="row" style="align-items:center; justify-content:space-between">
+      <div class="muted">
+        Preis: <span class="price">${formatEUR(p.priceByGroup[Object.keys(p.sizes)[0]])}</span>
+      </div>
+      <div class="actions">
+        <button>In den Warenkorb</button>
+      </div>
+    </div>
+  `;
+
+  const groupSel = card.querySelector('.groupSel');
+  const sizeSel  = card.querySelector('.sizeSel');
+  const priceEl  = card.querySelector('.price');
+  const qtySel   = card.querySelector('.qtySel');
+  const colorSel = card.querySelector('.colorSel');
+  const initialsChk = card.querySelector('.withInitials');
+
+  function fillSizes(){
+    sizeSel.innerHTML = p.sizes[groupSel.value].map(s=>`<option>${s}</option>`).join('');
+    priceEl.textContent = formatEUR(p.priceByGroup[groupSel.value]);
+  }
+
+  groupSel.addEventListener('change', fillSizes);
+  fillSizes();
+
+  card.querySelector('button').addEventListener('click', () => {
+    addToCart({
+      id:p.id,
+      name:p.name,
+      group:groupSel.value,
+      size:sizeSel.value,
+      color:colorSel.value,
+      unitPrice:p.priceByGroup[groupSel.value],
+      qty:parseInt(qtySel.value || 1, 10),
+      withInitials: initialsChk ? initialsChk.checked : false
+    });
+  });
+
+  grid.appendChild(card);
+});
+
+ // Warenkorb
+let cart = [];
+const cartBody = document.querySelector('#cartTable tbody');
+const subtotalEl = document.getElementById('subtotal');
+const initialsCostEl = document.getElementById('initialsCost');
+const totalEl = document.getElementById('total');
+const skipInitialsCharge = document.getElementById('skipInitialsCharge') || null;
+
+function sum(arr,fn){return arr.reduce((a,b)=>a+fn(b),0);}
+
+function addToCart(item){
+  cart.push(item);
+  renderCart();
+}
+
+function removeFromCart(idx){
+  cart.splice(idx,1);
+  renderCart();
+}
+
+function renderCart(){
+  cartBody.innerHTML = cart.map((it,idx)=>`
+    <tr>
+      <td>${it.name}${it.withInitials?` <span class="pill">Init.</span>`:''}</td>
+      <td>${it.size} <span class="muted">(${it.group})</span></td>
+      <td>${it.color}</td>
+      <td>${it.qty}</td>
+      <td>${formatEUR(it.unitPrice * it.qty)}</td>
+      <td><button onclick="removeFromCart(${idx})" title="Entfernen">✕</button></td>
+    </tr>
+  `).join('');
+
+  const subtotal = sum(cart, it => it.unitPrice * it.qty);
+  const initialsItems = (skipInitialsCharge && skipInitialsCharge.checked)
+    ? sum(cart, it => (it.withInitials ? it.qty : 0))
+    : sum(cart, it => it.qty);
+
+  const initialsCost = INITIALS_PRICE * initialsItems;
+
+  subtotalEl.textContent = formatEUR(subtotal);
+  initialsCostEl.textContent = formatEUR(initialsCost);
+  totalEl.textContent = formatEUR(subtotal + initialsCost);
+}
+
+if (skipInitialsCharge) skipInitialsCharge.addEventListener('change', renderCart);
+renderCart();
+
+ //  Absenden
+const statusEl = document.getElementById('status');
+
+function status(msg, isErr=false, ok=false){
+  statusEl.textContent = msg;
+  statusEl.className = isErr ? 'danger' : (ok ? 'ok' : 'muted');
+}
+
+document.getElementById('submitBtn').addEventListener('click', async ()=> {
+  const buyerName = document.getElementById('buyerName').value.trim();
+  const buyerEmail = document.getElementById('buyerEmail').value.trim();
+
+  if(!buyerName || !buyerEmail){
+    status('Bitte Name und E-Mail angeben.', true);
+    return;
+  }
+  if(cart.length === 0){
+    status('Warenkorb ist leer.', true);
+    return;
+  }
+
+  const payload = {
+    timestamp: new Date().toISOString(),
+    buyerName,
+    buyerEmail,
+    buyerTeam: document.getElementById('buyerTeam').value.trim(),
+    initials: document.getElementById('initials').value.trim(),
+    notes: document.getElementById('notes').value.trim(),
+    skipInitialsCharge: !!(skipInitialsCharge && skipInitialsCharge.checked),
+    totals: {
+      subtotal: sum(cart, it => it.unitPrice * it.qty),
+      initialsCostPerItem: INITIALS_PRICE,
+      initialsCost: 0,
+      total: 0
+    },
+    items: cart
+  };
+
+  const initialsItems = payload.skipInitialsCharge
+    ? sum(cart, it => (it.withInitials ? it.qty : 0))
+    : sum(cart, it => it.qty);
+
+  payload.totals.initialsCost = initialsItems * INITIALS_PRICE;
+  payload.totals.total = payload.totals.subtotal + payload.totals.initialsCost;
+
+  try{
+    status('Sende Bestellung …');
+    await fetch('https://script.google.com/macros/s/AKfycbxIXVAnetW7lASj592hcgs027EfqvKurBnWYv5Su8HNuQhsxdmTakrAbc5NOwGh1GX8lg/exec', {
+      method:'POST',
+      mode:'no-cors',      
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    status('✅ Bestellung übermittelt. Du erhältst zeitnah Rückmeldung vom Verein.', false, true);
+    cart = [];
+    renderCart();
+  }catch(e){
+    console.error(e);
+    status('Fehler beim Senden. Bitte später erneut versuchen oder Abteilungsleitung kontaktieren.', true);
+  }
+});
+</script>
+</body>
+</html>
