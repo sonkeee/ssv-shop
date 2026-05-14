@@ -35,7 +35,7 @@ const PRODUCTS = [
     name: "Hummel Lead 2.0 Track Pants",
     category: "Hose",
     tagline: "Passende Teamhose für Training und Spieltag",
-    description: "Die Track Pants ergänzen die Vereinsjacke zu einem einheitlichen Trainingsanzug. Sie sind für Alltag, Aufwärmen und Sammelbestellungen gedacht.",
+    description: "Die Track Pants ergänzen die Vereinsjacke zu einem einheitlichen Trainingsanzug. Sie sind für Alltag und Aufwärmen gedacht.",
     details: [
       "Stimmiger Look zusammen mit der Track Zip Jacket.",
       "Praktisch für Training, Anreise und Teamausstattung.",
@@ -116,7 +116,7 @@ const PRODUCTS = [
     description: "Das GO T-Shirt ist eine unkomplizierte Basis für Training, Jugendteams und Vereinsaktionen. Durch zwei Farboptionen bleibt die Auswahl flexibel.",
     details: [
       "In Schwarz und Rot bestellbar.",
-      "Geeignet für Training und Sammelbestellung im Verein.",
+      "Geeignet für Training.",
       "Personalisierung mit Initialen möglich."
     ],
     colors: ["Schwarz", "Rot"],
