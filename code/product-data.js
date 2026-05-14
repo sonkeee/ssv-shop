@@ -1,4 +1,4 @@
-const APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycbxIXVAnetW7lASj592hcgs027EfqvKurBnWYv5Su8HNuQhsxdmTakrAbc5NOwGh1GX8lg/exec";
+const APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycbw8hgJ-WDS5aNs3bL_q_1_VnziJUGvhiAUQ7KabIILTeWIK78Ow8QMNhDsjkUQ2aUB2bw/exec";
 const INITIALS_PRICE = 1.5;
 const CART_STORAGE_KEY = "ssv-shop-cart";
 

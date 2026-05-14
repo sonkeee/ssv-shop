@@ -204,6 +204,12 @@ function renderCart() {
   const initialsCostEl = document.getElementById("initialsCost");
   const totalEl = document.getElementById("total");
   const cartCountEl = document.getElementById("cartCount");
+  const cartCountNavEl = document.getElementById("cartCountNav");
+  const itemCount = sum(cart, (item) => item.qty);
+
+  if (cartCountNavEl) {
+    cartCountNavEl.textContent = String(itemCount);
+  }
 
   if (!cartTable || !subtotalEl || !initialsCostEl || !totalEl) {
     return;
@@ -227,7 +233,6 @@ function renderCart() {
   const subtotal = sum(cart, (item) => item.unitPrice * item.qty);
   const initialsItems = sum(cart, (item) => (item.withInitials ? item.qty : 0));
   const initialsCost = INITIALS_PRICE * initialsItems;
-  const itemCount = sum(cart, (item) => item.qty);
 
   subtotalEl.textContent = formatEUR(subtotal);
   initialsCostEl.textContent = formatEUR(initialsCost);
@@ -254,8 +259,10 @@ function setStatus(message, isError = false, isSuccess = false) {
 function buildPayload() {
   const buyerName = document.getElementById("buyerName")?.value.trim() || "";
   const buyerEmail = document.getElementById("buyerEmail")?.value.trim() || "";
+  const orderId = `SSV-${Date.now().toString(36).toUpperCase()}`;
 
   return {
+    orderId,
     buyerName,
     buyerEmail,
     buyerTeam: document.getElementById("buyerTeam")?.value.trim() || "",
@@ -301,7 +308,7 @@ function wireCheckoutForm() {
           ...payload
         })
       });
-      setStatus("Bestellung wurde übermittelt. Der Verein meldet sich bei dir.", false, true);
+      setStatus(`Bestellung ${payload.orderId} wurde übermittelt. Du bekommst eine Bestätigungs-E-Mail.`, false, true);
       cart = [];
       saveCart();
       renderCart();
@@ -323,7 +330,7 @@ function renderProductGrid() {
 
   grid.innerHTML = PRODUCTS.map((product) => `
     <article
-      class="product-card"
+      class="product-card product-card-compact"
       data-product-link="product.html?product=${product.slug}"
       tabindex="0"
       role="link"
@@ -335,11 +342,6 @@ function renderProductGrid() {
           <div class="card-copy">
             <span class="eyebrow">${product.category}</span>
             <h3>${product.name}</h3>
-            <p>${product.tagline}</p>
-          </div>
-          <div class="feature-row">
-            <span class="badge">${product.colors.join(" / ")}</span>
-            <span class="badge">ab ${formatEUR(Math.min(...Object.values(product.priceByGroup)))}</span>
           </div>
           <div class="card-open-hint">
             <span>Produkt ansehen</span>
@@ -347,18 +349,8 @@ function renderProductGrid() {
           </div>
         </div>
       </div>
-      <div class="product-card-order">
-        ${buildProductOptions(product)}
-      </div>
     </article>
   `).join("");
-
-  grid.querySelectorAll(".controls").forEach((control) => {
-    const product = getProductById(control.dataset.productId);
-    if (product) {
-      setUpProductControl(control, product);
-    }
-  });
 
   grid.querySelectorAll("[data-product-link]").forEach((card) => {
     const goToProduct = () => {
@@ -366,16 +358,10 @@ function renderProductGrid() {
     };
 
     card.addEventListener("click", (event) => {
-      if (event.target.closest(".controls, button, select, input, label")) {
-        return;
-      }
       goToProduct();
     });
 
     card.addEventListener("keydown", (event) => {
-      if (event.target.closest(".controls, button, select, input, label")) {
-        return;
-      }
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         goToProduct();

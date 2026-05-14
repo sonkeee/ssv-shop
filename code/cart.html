@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Warenkorb – SSV Vogelstang Volleyball</title>
+  <meta name="description" content="Warenkorb und Bestellabschluss für die SSV Vogelstang Volleyball Vereinskollektion 2026.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <div>SSV Vogelstang Volleyball – Vereinskollektion 2026</div>
+      <a href="https://ssv-volleyball.de" target="_blank" rel="noopener">ssv-volleyball.de</a>
+    </div>
+  </div>
+
+  <header class="subpage-header">
+    <div class="container nav-wrap nav-wrap-plain">
+      <a class="logo" href="index.html" aria-label="Zur Startseite">
+        <img src="/media/SSV_Logo_mini-1320x500.jpg" alt="SSV Logo" loading="lazy">
+      </a>
+      <nav class="main-nav main-nav-dark">
+        <a href="index.html#produkte">Zur Übersicht</a>
+        <a class="cart-nav-link cart-nav-link-dark" href="cart.html" aria-label="Zum Warenkorb">
+          <span class="cart-nav-icon" aria-hidden="true">🛒</span>
+          <span id="cartCountNav" class="cart-nav-count">0</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container cart-page">
+    <section class="section-head">
+      <div>
+        <span class="eyebrow">Bestellung</span>
+        <h2>Warenkorb und Abschluss</h2>
+      </div>
+      <p class="section-copy">Hier prüfst du deine Auswahl und schickst die Sammelbestellung an den Verein ab.</p>
+    </section>
+
+    <section class="cart-page-layout">
+      <div class="box cart-box">
+        <div class="section-header">
+          <div>
+            <span class="eyebrow">Sammelbestellung</span>
+            <h2>Warenkorb</h2>
+          </div>
+          <div class="cart-summary">
+            <span id="cartCount" class="cart-count">0 Artikel</span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="cartTable">
+            <thead>
+              <tr>
+                <th>Artikel</th>
+                <th>Größe</th>
+                <th>Farbe</th>
+                <th>Menge</th>
+                <th>Preis</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4">Zwischensumme</td>
+                <td id="subtotal">0,00 €</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td colspan="4">Initialen / Nummern</td>
+                <td id="initialsCost">0,00 €</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td colspan="4">Gesamt</td>
+                <td id="total">0,00 €</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="box form-box">
+        <div class="section-header">
+          <div>
+            <span class="eyebrow">Besteller:in</span>
+            <h2>Bestellung abschicken</h2>
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>Hinweis:</strong> Zahlung und Ausgabe laufen weiterhin gesammelt über den Verein. Online-Zahlung ist bewusst nicht Teil dieses Shops.
+        </div>
+
+        <div class="form-grid">
+          <div>
+            <label for="buyerName">Vor- und Nachname</label>
+            <input id="buyerName" type="text" required placeholder="Max Mustermann">
+          </div>
+          <div>
+            <label for="buyerEmail">E-Mail</label>
+            <input id="buyerEmail" type="email" required placeholder="name@ssv-volleyball.de">
+          </div>
+          <div>
+            <label for="buyerTeam">Team / Gruppe</label>
+            <input id="buyerTeam" type="text" placeholder="z. B. Damen, U16, U14">
+          </div>
+          <div>
+            <label for="initials">Initialen oder kleine Nummer</label>
+            <input id="initials" type="text" placeholder="z. B. AM oder 12">
+          </div>
+        </div>
+
+        <div class="field-stack">
+          <label for="notes">Bemerkungen</label>
+          <input id="notes" type="text" placeholder="z. B. Abholung beim Training oder Größenhinweis">
+        </div>
+
+        <div class="actions">
+          <button id="submitBtn" class="button-primary button-full">Bestellung abschicken</button>
+          <div id="status" class="muted status-line"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="product-data.js"></script>
+  <script src="shop.js"></script>
+</body>
+</html>

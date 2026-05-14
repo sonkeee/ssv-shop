@@ -63,7 +63,7 @@ function renderProductPage() {
           <h2>Artikel direkt auswählen</h2>
           <p class="muted">Lege den Artikel hier direkt in den gemeinsamen Warenkorb.</p>
           ${buildProductOptions(product, false)}
-          <a class="text-link" href="index.html#shopSidebar">Zum Warenkorb und zur Bestellung</a>
+          <a class="text-link" href="cart.html">Zum Warenkorb und zur Bestellung</a>
         </div>
       </aside>
     </section>

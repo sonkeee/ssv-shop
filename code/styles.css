@@ -311,6 +311,13 @@ th {
   color: var(--text-soft);
 }
 
+.catalog-shell {
+  margin-top: -42px;
+  padding-bottom: 80px;
+  position: relative;
+  z-index: 3;
+}
+
 .shop-shell {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.82fr);
@@ -338,10 +345,25 @@ th {
   display: grid;
 }
 
+.cart-page {
+  padding-top: 34px;
+  padding-bottom: 80px;
+}
+
+.cart-page-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+  gap: 24px;
+}
+
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 24px;
+}
+
+.product-grid-compact {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
 .product-card {
@@ -375,6 +397,23 @@ th {
 
 .product-card-order {
   padding: 0 24px 24px;
+}
+
+.product-card-compact .product-gallery-card {
+  grid-template-columns: 1fr;
+  padding: 16px 16px 0;
+}
+
+.product-card-compact .product-shot:nth-child(2) {
+  display: none;
+}
+
+.product-card-compact .product-card-body {
+  gap: 12px;
+}
+
+.product-card-compact .card-copy h3 {
+  margin-bottom: 0;
 }
 
 .product-card-body {
@@ -579,6 +618,52 @@ select:focus {
   font-weight: 800;
 }
 
+.cart-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.cart-nav-link:hover,
+.cart-nav-link:focus-visible {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.cart-nav-link-dark {
+  background: rgba(196, 30, 58, 0.08);
+  color: var(--text);
+}
+
+.cart-nav-link-dark:hover,
+.cart-nav-link-dark:focus-visible {
+  background: rgba(196, 30, 58, 0.14);
+}
+
+.cart-nav-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.cart-nav-count {
+  min-width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -714,6 +799,7 @@ tfoot td {
 }
 
 @media (max-width: 980px) {
+  .cart-page-layout,
   .shop-shell,
   .product-detail-layout,
   .section-head {
@@ -729,6 +815,11 @@ tfoot td {
   }
 
   .shop-shell {
+    margin-top: 0;
+    padding-top: 36px;
+  }
+
+  .catalog-shell {
     margin-top: 0;
     padding-top: 36px;
   }
