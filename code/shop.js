@@ -57,7 +57,7 @@ function buildGallery(product, modifierClass = "") {
             data-product-name="${product.name}"
             data-image-index="${index}"
           >
-          <figcaption>${index === 0 ? "Foto 1" : "Foto 2"}</figcaption>
+          <figcaption>Foto ${index + 1}</figcaption>
         </figure>
       `).join("")}
     </div>
@@ -125,7 +125,7 @@ function setUpProductControl(container, product) {
   fillSizes();
 
   addBtn.addEventListener("click", () => {
-    addToCart({
+    const item = {
       id: product.id,
       name: product.name,
       group: groupSel.value,
@@ -134,7 +134,11 @@ function setUpProductControl(container, product) {
       unitPrice: product.priceByGroup[groupSel.value],
       qty: parseInt(qtySel.value || "1", 10),
       withInitials: initialsChk ? initialsChk.checked : false
-    });
+    };
+
+    addToCart(item);
+    flashAddToCartButton(addBtn);
+    showAddToCartToast(item);
   });
 }
 
@@ -186,10 +190,87 @@ function wireImageFallbacks(scope = document) {
   });
 }
 
+let cartFeedbackTimer = null;
+let addToastTimer = null;
+let addButtonTimer = null;
+
+function ensureCartToast() {
+  let toast = document.getElementById("cartToast");
+
+  if (toast) {
+    return toast;
+  }
+
+  toast = document.createElement("div");
+  toast.id = "cartToast";
+  toast.className = "cart-toast";
+  toast.setAttribute("aria-live", "polite");
+  toast.setAttribute("aria-atomic", "true");
+  document.body.appendChild(toast);
+  return toast;
+}
+
+function showAddToCartToast(item) {
+  const toast = ensureCartToast();
+  const qtyLabel = item.qty === 1 ? "Artikel" : `${item.qty} Artikel`;
+
+  toast.textContent = `${qtyLabel} im Warenkorb`;
+  toast.classList.remove("is-visible");
+
+  void toast.offsetWidth;
+
+  toast.classList.add("is-visible");
+
+  window.clearTimeout(addToastTimer);
+  addToastTimer = window.setTimeout(() => {
+    toast.classList.remove("is-visible");
+  }, 2200);
+}
+
+function flashAddToCartButton(button) {
+  const originalText = button.dataset.originalLabel || button.textContent;
+  button.dataset.originalLabel = originalText;
+  button.textContent = "Hinzugefügt";
+  button.classList.add("is-added");
+  button.disabled = true;
+
+  window.clearTimeout(addButtonTimer);
+  addButtonTimer = window.setTimeout(() => {
+    button.textContent = originalText;
+    button.classList.remove("is-added");
+    button.disabled = false;
+  }, 1200);
+}
+
+function triggerCartFeedback() {
+  const cartLink = document.querySelector(".cart-nav-link");
+  const cartCount = document.getElementById("cartCountNav");
+
+  if (!cartLink || !cartCount) {
+    return;
+  }
+
+  cartLink.classList.remove("cart-nav-link-added");
+  cartCount.classList.remove("cart-nav-count-bump");
+
+  // Force a reflow so the animation can replay on repeated clicks.
+  void cartLink.offsetWidth;
+
+  cartLink.classList.add("cart-nav-link-added");
+  cartCount.classList.add("cart-nav-count-bump");
+
+  window.clearTimeout(cartFeedbackTimer);
+  cartFeedbackTimer = window.setTimeout(() => {
+    cartLink.classList.remove("cart-nav-link-added");
+    cartCount.classList.remove("cart-nav-count-bump");
+  }, 850);
+}
+
 function addToCart(item) {
   cart.push(item);
   saveCart();
   renderCart();
+  triggerCartFeedback();
 }
 
 function removeFromCart(index) {

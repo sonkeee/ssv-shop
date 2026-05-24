@@ -1,4 +1,4 @@
-const APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycbw8hgJ-WDS5aNs3bL_q_1_VnziJUGvhiAUQ7KabIILTeWIK78Ow8QMNhDsjkUQ2aUB2bw/exec";
+const APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycby2swd521tBPFzH1wBejZzdDdlsHrxv_-cbH2z9fBb-7uPcTM3soreUkrUt0a1NlkgZaQ/exec";
 const INITIALS_PRICE = 1.5;
 const CART_STORAGE_KEY = "ssv-shop-cart";
 
@@ -25,8 +25,8 @@ const PRODUCTS = [
     fit: "Reguläre Passform",
     initialsPossible: true,
     images: [
-      { src: "/media/products/lead-zip-jacket-1.jpg", alt: "Hummel Lead 2.0 Track Zip Jacket Vorderansicht" },
-      { src: "/media/products/lead-zip-jacket-2.jpg", alt: "Hummel Lead 2.0 Track Zip Jacket Detailansicht" }
+      { src: "media/products/jacke_vorne_bk.jpg", alt: "Hummel Lead 2.0 Track Zip Jacket Vorderansicht" },
+      { src: "media/products/jacke_hinten_bk.jpg", alt: "Hummel Lead 2.0 Track Zip Jacket Rückansicht" }
     ]
   },
   {
@@ -51,8 +51,8 @@ const PRODUCTS = [
     fit: "Schmale Sportpassform",
     initialsPossible: true,
     images: [
-      { src: "/media/products/lead-track-pants-1.jpg", alt: "Hummel Lead 2.0 Track Pants Vorderansicht" },
-      { src: "/media/products/lead-track-pants-2.jpg", alt: "Hummel Lead 2.0 Track Pants Detailansicht" }
+      { src: "media/products/hose_vorne_bk.jpg", alt: "Hummel Lead 2.0 Track Pants Vorderansicht" },
+      { src: "media/products/hose_hinten_bk.jpg", alt: "Hummel Lead 2.0 Track Pants Rückansicht" }
     ]
   },
   {
@@ -77,8 +77,8 @@ const PRODUCTS = [
     fit: "Bequeme Regular Fit",
     initialsPossible: true,
     images: [
-      { src: "/media/products/lead-zip-hoodie-1.jpg", alt: "Hummel Lead 2.0 Zip Hoodie Vorderansicht" },
-      { src: "/media/products/lead-zip-hoodie-2.jpg", alt: "Hummel Lead 2.0 Zip Hoodie Detailansicht" }
+      { src: "media/products/kapuzenjacke_vorne_bk.jpg", alt: "Hummel Lead 2.0 Zip Hoodie Vorderansicht" },
+      { src: "media/products/kapuzenjacke_hinten_bk.jpg", alt: "Hummel Lead 2.0 Zip Hoodie Detailansicht" }
     ]
   },
   {
@@ -103,8 +103,8 @@ const PRODUCTS = [
     fit: "Normale Passform",
     initialsPossible: true,
     images: [
-      { src: "/media/products/go-hoodie-1.jpg", alt: "Hummel GO 2.0 Hoodie Vorderansicht" },
-      { src: "/media/products/go-hoodie-2.jpg", alt: "Hummel GO 2.0 Hoodie Detailansicht" }
+      { src: "media/products/hoodie_vorne_bk.jpg", alt: "Hummel GO 2.0 Hoodie Vorderansicht" },
+      { src: "media/products/hoodie_hinten_bk.jpg", alt: "Hummel GO 2.0 Hoodie Detailansicht" }
     ]
   },
   {
@@ -129,8 +129,10 @@ const PRODUCTS = [
     fit: "Athletische Standardpassform",
     initialsPossible: true,
     images: [
-      { src: "/media/products/go-tshirt-1.jpg", alt: "Hummel GO 2.0 T-Shirt Vorderansicht" },
-      { src: "/media/products/go-tshirt-2.jpg", alt: "Hummel GO 2.0 T-Shirt Detailansicht" }
+      { src: "media/products/bw_tshirt_vorne_bk.jpg", alt: "Hummel GO 2.0 T-Shirt Vorderansicht Schwarz" },
+      { src: "media/products/bw_tshirt_hinten_bk.jpg", alt: "Hummel GO 2.0 T-Shirt Detailansicht Schwarz" },
+      { src: "media/products/bw_tshirt_vorne_rd.jpg", alt: "Hummel GO 2.0 T-Shirt Detailansicht Rot" },
+      { src: "media/products/bw_tshirt_hinten_rd.jpg", alt: "Hummel GO 2.0 T-Shirt Detailansicht Rot" }
     ]
   },
   {
@@ -155,8 +157,10 @@ const PRODUCTS = [
     fit: "Leichte Trainingspassform",
     initialsPossible: true,
     images: [
-      { src: "/media/products/essential-poly-tshirt-1.jpg", alt: "Hummel Essential Polyester T-Shirt Vorderansicht" },
-      { src: "/media/products/essential-poly-tshirt-2.jpg", alt: "Hummel Essential Polyester T-Shirt Detailansicht" }
+      { src: "media/products/funktionsshirt_vorne_bk.jpg", alt: "Hummel Essential Polyester T-Shirt Vorderansicht Schwarz"},
+      { src: "media/products/funktionsshirt_hinten_bk.jpg", alt: "Hummel Essential Polyester T-Shirt Detailansicht Schwarz"},
+      { src: "media/products/funktionsshirt_vorne_rd.jpg", alt: "Hummel Essential Polyester T-Shirt Vorderansicht Rot"},
+      { src: "media/products/funktionsshirt_hinten_rd.jpg", alt: "Hummel Essential Polyester T-Shirt Detailansicht Rot"}
     ]
   }
 ];
