@@ -47,7 +47,7 @@ function renderProductPage() {
             <strong>${product.materials}</strong>
           </div>
           <div class="meta-card">
-            <span class="meta-label">Preis</span>
+            <span class="meta-label">Preis ab</span>
             <strong>${formatEUR(Math.min(...Object.values(product.priceByGroup)))}</strong>
           </div>
         </div>
@@ -63,7 +63,7 @@ function renderProductPage() {
           <h2>Artikel direkt auswählen</h2>
           <p class="muted">Lege den Artikel hier direkt in den gemeinsamen Warenkorb.</p>
           ${buildProductOptions(product, false)}
-          <a class="text-link" href="cart.html">Zum Warenkorb und zur Bestellung</a>
+          <a class="text-link go-to-cart-link" href="cart.html">Zum Warenkorb und zur Bestellung</a>
         </div>
       </aside>
     </section>

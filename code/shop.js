@@ -96,8 +96,9 @@ function buildProductOptions(product) {
 
       <div class="product-actions">
         <div class="price-block">
-          <span class="muted">Preis ab</span>
+          <span class="muted price-label">Aktueller Preis</span>
           <strong class="price">${formatEUR(product.priceByGroup[Object.keys(product.sizes)[0]])}</strong>
+          <span class="muted price-detail"></span>
         </div>
         <button type="button" class="button-primary addToCartBtn">In den Warenkorb</button>
       </div>
@@ -109,36 +110,89 @@ function setUpProductControl(container, product) {
   const groupSel = container.querySelector(".groupSel");
   const sizeSel = container.querySelector(".sizeSel");
   const priceEl = container.querySelector(".price");
+  const priceDetailEl = container.querySelector(".price-detail");
   const qtySel = container.querySelector(".qtySel");
   const colorSel = container.querySelector(".colorSel");
   const initialsChk = container.querySelector(".withInitials");
   const addBtn = container.querySelector(".addToCartBtn");
+  const goToCartLink = container.parentElement?.querySelector(".go-to-cart-link");
 
-  function fillSizes() {
-    sizeSel.innerHTML = product.sizes[groupSel.value]
-      .map((size) => `<option value="${size}">${size}</option>`)
-      .join("");
-    priceEl.textContent = formatEUR(product.priceByGroup[groupSel.value]);
+  function getSelectionState() {
+    const unitPrice = product.priceByGroup[groupSel.value];
+    const qty = Math.max(1, parseInt(qtySel.value || "1", 10) || 1);
+    const withInitials = initialsChk ? initialsChk.checked : false;
+    const initialsCost = withInitials ? INITIALS_PRICE * qty : 0;
+    const total = unitPrice * qty + initialsCost;
+
+    return {
+      unitPrice,
+      qty,
+      withInitials,
+      initialsCost,
+      total
+    };
   }
 
-  groupSel.addEventListener("change", fillSizes);
-  fillSizes();
+  function buildSelectedItem() {
+    const selection = getSelectionState();
 
-  addBtn.addEventListener("click", () => {
-    const item = {
+    return {
       id: product.id,
       name: product.name,
       group: groupSel.value,
       size: sizeSel.value,
       color: colorSel.value,
-      unitPrice: product.priceByGroup[groupSel.value],
-      qty: parseInt(qtySel.value || "1", 10),
-      withInitials: initialsChk ? initialsChk.checked : false
+      unitPrice: selection.unitPrice,
+      qty: selection.qty,
+      withInitials: selection.withInitials
     };
+  }
+
+  function updateDisplayedPrice() {
+    const selection = getSelectionState();
+    priceEl.textContent = formatEUR(selection.total);
+
+    const details = [
+      `${formatEUR(selection.unitPrice)} pro Stück`,
+      `x ${selection.qty}`
+    ];
+
+    if (selection.withInitials) {
+      details.push(`inkl. ${formatEUR(selection.initialsCost)} Initialen`);
+    }
+
+    if (priceDetailEl) {
+      priceDetailEl.textContent = details.join(" ");
+    }
+  }
+
+  function fillSizes() {
+    sizeSel.innerHTML = product.sizes[groupSel.value]
+      .map((size) => `<option value="${size}">${size}</option>`)
+      .join("");
+    updateDisplayedPrice();
+  }
+
+  groupSel.addEventListener("change", fillSizes);
+  qtySel.addEventListener("input", () => {
+    qtySel.value = String(Math.max(1, parseInt(qtySel.value || "1", 10) || 1));
+    updateDisplayedPrice();
+  });
+  initialsChk?.addEventListener("change", updateDisplayedPrice);
+  fillSizes();
+
+  addBtn.addEventListener("click", () => {
+    const item = buildSelectedItem();
 
     addToCart(item);
     flashAddToCartButton(addBtn);
     showAddToCartToast(item);
+  });
+
+  goToCartLink?.addEventListener("click", (event) => {
+    event.preventDefault();
+    addToCart(buildSelectedItem());
+    window.location.href = goToCartLink.href;
   });
 }
 
@@ -212,9 +266,9 @@ function ensureCartToast() {
 
 function showAddToCartToast(item) {
   const toast = ensureCartToast();
-  const qtyLabel = item.qty === 1 ? "Artikel" : `${item.qty} Artikel`;
+  const qtyLabel = item.qty === 1 ? "1 Artikel" : `${item.qty} Artikel`;
 
-  toast.textContent = `${qtyLabel} im Warenkorb`;
+  toast.textContent = `+ ${qtyLabel} im Warenkorb`;
   toast.classList.remove("is-visible");
 
   void toast.offsetWidth;

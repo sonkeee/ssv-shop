@@ -577,11 +577,16 @@ select:focus {
 .price-block {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .price {
   font-size: 1.15rem;
   color: var(--primary);
+}
+
+.price-detail {
+  font-size: 0.84rem;
 }
 
 .text-link {
