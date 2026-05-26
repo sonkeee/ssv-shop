@@ -149,11 +149,11 @@ function sendAdminEmail_(orderId, payload) {
 function sendCustomerEmail_(orderId, payload) {
   const customerEmail = String(payload.buyerEmail || "").trim();
   if (!customerEmail) {
-    throw new Error("Keine Kunden-E-Mail uebergeben.");
+    throw new Error("Keine Kunden-E-Mail übergeben.");
   }
 
   if (!isValidEmail_(customerEmail)) {
-    throw new Error("Ungueltige Kunden-E-Mail: " + customerEmail);
+    throw new Error("Ungültige Kunden-E-Mail: " + customerEmail);
   }
 
   const subject = "Deine SSV-Shop-Bestellung " + orderId;
@@ -164,7 +164,7 @@ function sendCustomerEmail_(orderId, payload) {
     "",
     buildPlainTextSummary_(orderId, payload),
     "",
-    "Viele Gruesse",
+    "Viele Grüße",
     "SSV Vogelstang Volleyball"
   ].join("\n");
 

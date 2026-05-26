@@ -6,7 +6,7 @@ Die Website zeigt Produkte, Produktdetailseiten, einen gemeinsamen Warenkorb und
 
 ## Projektaufbau
 
-- `code/index.html`: Startseite mit Produktuebersicht
+- `code/index.html`: Startseite mit Produktübersicht
 - `code/product.html`: Produktdetailseite
 - `code/cart.html`: Warenkorb und Bestellabschluss
 - `code/styles.css`: komplettes Styling und Responsive Layout
@@ -19,14 +19,14 @@ Die Website zeigt Produkte, Produktdetailseiten, einen gemeinsamen Warenkorb und
 
 ## Funktionen
 
-- Produktuebersicht mit eigener Detailseite pro Artikel
+- Produktübersicht mit eigener Detailseite pro Artikel
 - Live-Preis auf der Produktseite anhand von:
   - Kinder / Erwachsene
   - Menge
   - Initialen-Aufpreis
 - Warenkorb im `localStorage`
-- Direktes Feedback beim Hinzufuegen zum Warenkorb
-- Link auf der Produktseite, der aktuelle Auswahl direkt in den Warenkorb legt und zur Bestellung führt
+- Direktes Feedback beim Hinzufügen zum Warenkorb
+- Link auf der Produktseite, der aktülle Auswahl direkt in den Warenkorb legt und zur Bestellung führt
 - Checkout-Formular mit Versand an Google Apps Script
 - Speicherung der Bestellung in Google Sheets
 - Admin- und Kunden-E-Mail
@@ -34,7 +34,7 @@ Die Website zeigt Produkte, Produktdetailseiten, einen gemeinsamen Warenkorb und
 
 ## Lokale Nutzung
 
-Da es sich um statische Dateien handelt, kann der Shop direkt ueber einen einfachen lokalen Webserver gestartet werden.
+Da es sich um statische Dateien handelt, kann der Shop direkt über einen einfachen lokalen Webserver gestartet werden.
 
 Beispiel:
 
@@ -43,15 +43,15 @@ cd code
 python3 -m http.server 8000
 ```
 
-Danach im Browser `http://localhost:8000` oeffnen.
+Danach im Browser `http://localhost:8000` öffnen.
 
 ## Shop konfigurieren
 
 Die wichtigsten Frontend-Konstanten stehen in `code/product-data.js`.
 
-- `APPS_SCRIPT_ENDPOINT`: URL des veroeffentlichten Google Apps Script Web Apps Endpoints
+- `APPS_SCRIPT_ENDPOINT`: URL des veröffentlichten Google Apps Script Web Apps Endpoints
 - `INITIALS_PRICE`: Aufpreis pro Artikel mit Initialen
-- `CART_STORAGE_KEY`: Local-Storage-Key fuer den Warenkorb
+- `CART_STORAGE_KEY`: Local-Storage-Key für den Warenkorb
 
 Neue Produkte werden ebenfalls in `code/product-data.js` gepflegt. Dort werden Name, Kategorie, Farben, Groessen, Bilder, Preise und Initialen-Option definiert.
 
@@ -63,10 +63,10 @@ Das Backend liegt in `apps-script/Code.gs` und erwartet `POST`-Requests mit den 
 
 Folgende Konstanten sollten angepasst werden:
 
-- `SHEET_NAME`: Ziel-Tabelle fuer Bestellungen
-- `ADMIN_EMAIL`: Empfaenger fuer Admin-Benachrichtigungen
-- `REPLY_TO_EMAIL`: Reply-To fuer versendete Mails
-- `NTFY_TOPIC_URL`: optionaler `ntfy`-Endpoint fuer Push-Nachrichten
+- `SHEET_NAME`: Ziel-Tabelle für Bestellungen
+- `ADMIN_EMAIL`: Empfänger für Admin-Benachrichtigungen
+- `REPLY_TO_EMAIL`: Reply-To für versendete Mails
+- `NTFY_TOPIC_URL`: optionaler `ntfy`-Endpoint für Push-Nachrichten
 
 ### Erwartetes Verhalten
 
@@ -75,14 +75,14 @@ Beim Eingang einer Bestellung macht das Script Folgendes:
 1. Liest die Bestelldaten aus dem Request.
 2. Schreibt eine neue Zeile in das Google Sheet.
 3. Versendet optional eine Admin-E-Mail.
-4. Versendet eine Bestellbestaetigung an den Kunden.
+4. Versendet eine Bestellbestätigung an den Kunden.
 5. Sendet optional eine Push-Benachrichtigung.
 6. Schreibt den Versandstatus zurück ins Sheet.
 
 ### Deployment von Apps Script
 
 1. Neues Google Apps Script Projekt anlegen.
-2. Inhalt aus `apps-script/Code.gs` uebernehmen.
+2. Inhalt aus `apps-script/Code.gs` übernehmen.
 3. `appsscript.json` mit den benoetigten Scopes hinterlegen.
 4. Mit einem Google Sheet verbinden.
 5. Als Web App deployen.
@@ -90,9 +90,9 @@ Beim Eingang einer Bestellung macht das Script Folgendes:
 
 ## Datenfluss einer Bestellung
 
-1. Nutzer waehlt Produkt, Groessengruppe, Groesse, Farbe, Menge und optional Initialen.
+1. Nutzer wählt Produkt, Groessengruppe, Groesse, Farbe, Menge und optional Initialen.
 2. Die Produktseite berechnet den aktuellen Preis live.
-3. Artikel wird dem Warenkorb im Browser hinzugefuegt.
+3. Artikel wird dem Warenkorb im Browser hinzugefügt.
 4. Im Checkout werden Kontaktdaten eingegeben.
 5. Das Frontend sendet die Bestellung an das Apps Script.
 6. Das Apps Script speichert und verteilt die Bestellung weiter.
@@ -104,7 +104,9 @@ Beim Eingang einer Bestellung macht das Script Folgendes:
 
 ## Weiterentwicklung
 
-Sinnvolle naechste Schritte:
+Sinnvolle nächste Schritte:
 
 - echtes Bestell-Feedback nach erfolgreicher Server-Antwort
 - Bearbeiten von Mengen direkt im Warenkorb
+- Mehr initialien po Bestellung
+
