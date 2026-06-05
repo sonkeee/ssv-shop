@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+
 :root {
   --primary: #c41e3a;
   --primary-dark: #8b1629;
@@ -13,9 +15,10 @@
   --shadow-soft: 0 12px 32px rgba(21, 28, 36, 0.08);
   --success: #15803d;
   --danger: #b91c1c;
+  --z-nav: 2;
+  --z-catalog: 3;
+  --z-toast: 50;
 }
-
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
 
 * {
   box-sizing: border-box;
@@ -91,9 +94,13 @@ img {
   backdrop-filter: blur(14px);
 }
 
+.header-dark {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+}
+
 .nav-wrap {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-nav);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -323,7 +330,7 @@ th {
   margin-top: -42px;
   padding-bottom: 80px;
   position: relative;
-  z-index: 3;
+  z-index: var(--z-catalog);
 }
 
 .shop-shell {
@@ -334,7 +341,7 @@ th {
   margin-top: -42px;
   padding-bottom: 80px;
   position: relative;
-  z-index: 3;
+  z-index: var(--z-catalog);
 }
 
 .shop-main {
@@ -516,16 +523,6 @@ th {
   object-fit: cover;
 }
 
-.product-shot figcaption {
-  padding: 12px 14px 15px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--text-soft);
-}
-
-.product-shot.is-placeholder figcaption::after {
-  content: " · Platzhalter";
-}
 
 .controls {
   display: grid;
@@ -693,7 +690,7 @@ select:focus {
   position: fixed;
   left: 50%;
   bottom: 22px;
-  z-index: 50;
+  z-index: var(--z-toast);
   transform: translate(-50%, 18px);
   opacity: 0;
   pointer-events: none;
@@ -1029,5 +1026,90 @@ tfoot td {
     max-width: 360px;
     text-align: center;
     bottom: 14px;
+  }
+}
+
+/* ── Warenkorb – Handy-Optimierung ─────────────────────────────────────────── */
+@media (max-width: 620px) {
+  .cart-page-layout {
+    gap: 16px;
+  }
+
+  .cart-box,
+  .form-box {
+    gap: 14px;
+  }
+
+  /* Tabellen-Kopf ausblenden, Zeilen als Karten darstellen */
+  #cartTable thead {
+    display: none;
+  }
+
+  #cartTable tbody tr {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  /* Alle Zellen: Label links, Wert rechts */
+  #cartTable tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    padding: 4px 0;
+    font-size: 0.9rem;
+  }
+
+  /* Label aus data-label-Attribut */
+  #cartTable tbody td[data-label]::before {
+    content: attr(data-label);
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-soft);
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Artikel-Name: volle Breite, prominent */
+  #cartTable tbody td:first-child {
+    font-weight: 700;
+    font-size: 0.98rem;
+    padding-bottom: 10px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #cartTable tbody td:first-child::before {
+    display: none;
+  }
+
+  /* Löschen-Button: volle Breite, oben abgetrennt */
+  #cartTable tbody td:last-child {
+    justify-content: flex-end;
+    padding-top: 10px;
+    margin-top: 4px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Fußzeile (Summen): kompakter */
+  #cartTable tfoot td {
+    padding: 8px 6px;
+    font-size: 0.92rem;
+  }
+
+  /* Formular: einspaltig */
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Hinweis-Box schmaler */
+  .note {
+    font-size: 0.88rem;
+    padding: 12px 14px;
   }
 }

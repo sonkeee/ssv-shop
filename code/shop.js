@@ -57,7 +57,6 @@ function buildGallery(product, modifierClass = "") {
             data-product-name="${product.name}"
             data-image-index="${index}"
           >
-          <figcaption>Foto ${index + 1}</figcaption>
         </figure>
       `).join("")}
     </div>
@@ -355,11 +354,11 @@ function renderCart() {
   cartBody.innerHTML = cart.length
     ? cart.map((item, index) => `
         <tr>
-          <td>${item.name}${item.withInitials ? ` <span class="pill">Init.</span>` : ""}</td>
-          <td>${item.size} <span class="muted">(${item.group})</span></td>
-          <td>${item.color}</td>
-          <td>${item.qty}</td>
-          <td>${formatEUR(item.unitPrice * item.qty)}</td>
+          <td data-label="Artikel">${item.name}${item.withInitials ? ` <span class="pill">Init.</span>` : ""}</td>
+          <td data-label="Größe">${item.size} <span class="muted">(${item.group})</span></td>
+          <td data-label="Farbe">${item.color}</td>
+          <td data-label="Menge">${item.qty}</td>
+          <td data-label="Preis">${formatEUR(item.unitPrice * item.qty)}</td>
           <td><button class="remove-btn" type="button" data-remove-index="${index}" aria-label="Artikel entfernen">×</button></td>
         </tr>
       `).join("")
@@ -373,7 +372,7 @@ function renderCart() {
   initialsCostEl.textContent = formatEUR(initialsCost);
   totalEl.textContent = formatEUR(subtotal + initialsCost);
   if (cartCountEl) {
-    cartCountEl.textContent = `${itemCount} ${itemCount === 1 ? "Artikel" : "Artikel"}`;
+    cartCountEl.textContent = `${itemCount} Artikel`;
   }
 
   cartBody.querySelectorAll("[data-remove-index]").forEach((button) => {
@@ -392,22 +391,20 @@ function setStatus(message, isError = false, isSuccess = false) {
 }
 
 function buildPayload() {
-  const buyerName = document.getElementById("buyerName")?.value.trim() || "";
+  const buyerName  = document.getElementById("buyerName")?.value.trim() || "";
   const buyerEmail = document.getElementById("buyerEmail")?.value.trim() || "";
-  const orderId = `SSV-${Date.now().toString(36).toUpperCase()}`;
 
   return {
-    orderId,
     buyerName,
     buyerEmail,
     buyerTeam: document.getElementById("buyerTeam")?.value.trim() || "",
-    initials: document.getElementById("initials")?.value.trim() || "",
-    notes: document.getElementById("notes")?.value.trim() || "",
+    initials:  document.getElementById("initials")?.value.trim() || "",
+    notes:     document.getElementById("notes")?.value.trim() || "",
     totals: {
-      subtotal: sum(cart, (item) => item.unitPrice * item.qty),
+      subtotal:          sum(cart, (item) => item.unitPrice * item.qty),
       initialsCostPerItem: INITIALS_PRICE,
-      initialsCost: sum(cart, (item) => (item.withInitials ? item.qty : 0)) * INITIALS_PRICE,
-      total: sum(cart, (item) => item.unitPrice * item.qty) + (sum(cart, (item) => (item.withInitials ? item.qty : 0)) * INITIALS_PRICE)
+      initialsCost:      sum(cart, (item) => (item.withInitials ? item.qty : 0)) * INITIALS_PRICE,
+      total:             sum(cart, (item) => item.unitPrice * item.qty) + (sum(cart, (item) => (item.withInitials ? item.qty : 0)) * INITIALS_PRICE)
     },
     items: cart
   };
@@ -434,16 +431,31 @@ function wireCheckoutForm() {
 
     try {
       setStatus("Sende Bestellung …");
-      await fetch(APPS_SCRIPT_ENDPOINT, {
+      submitBtn.disabled = true;
+
+      // Content-Type text/plain vermeidet CORS-Preflight bei Google Apps Script.
+      // Der Server liest den Body trotzdem als JSON (e.postData.contents).
+      const response = await fetch(APPS_SCRIPT_ENDPOINT, {
         method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          ...payload
-        })
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payload)
       });
-      setStatus(`Bestellung ${payload.orderId} wurde übermittelt. Du bekommst eine Bestätigungs-E-Mail.`, false, true);
+
+      if (!response.ok) {
+        throw new Error(`Server-Fehler: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.ok) {
+        throw new Error(result.error || "Unbekannter Fehler vom Server.");
+      }
+
+      setStatus(
+        `Bestellung ${result.orderId} wurde übermittelt. Du bekommst eine Bestätigungs-E-Mail.`,
+        false,
+        true
+      );
       cart = [];
       saveCart();
       renderCart();
@@ -453,6 +465,8 @@ function wireCheckoutForm() {
     } catch (error) {
       console.error(error);
       setStatus("Fehler beim Senden. Bitte später erneut versuchen.", true);
+    } finally {
+      submitBtn.disabled = false;
     }
   });
 }
@@ -492,7 +506,7 @@ function renderProductGrid() {
       window.location.href = card.dataset.productLink;
     };
 
-    card.addEventListener("click", (event) => {
+    card.addEventListener("click", () => {
       goToProduct();
     });
 

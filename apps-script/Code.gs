@@ -1,8 +1,14 @@
-const SHEET_NAME = "Bestellungen";
-const ADMIN_EMAIL = "soenke.brauch@ssv-volleyball.de";
-const REPLY_TO_EMAIL = "soenke.brauch@ssv-volleyball.de";
-const NTFY_TOPIC_URL = "";
+// ─── Konfiguration ────────────────────────────────────────────────────────────
+// Empfohlen für Produktion: In Apps Script → Projekteinstellungen →
+// Skript-Eigenschaften die Keys ADMIN_EMAIL, REPLY_TO_EMAIL und NTFY_TOPIC_URL
+// setzen. Die hier hinterlegten Werte dienen als Fallback.
+const SHEET_NAME    = "Bestellungen";
+const _PROPS        = PropertiesService.getScriptProperties();
+const ADMIN_EMAIL   = _PROPS.getProperty("ADMIN_EMAIL")    || "soenke.brauch@ssv-volleyball.de";
+const REPLY_TO_EMAIL = _PROPS.getProperty("REPLY_TO_EMAIL") || "soenke.brauch@ssv-volleyball.de";
+const NTFY_TOPIC_URL = _PROPS.getProperty("NTFY_TOPIC_URL") || "";
 
+// ─── Hilfsfunktionen (Autorisierung / Test) ───────────────────────────────────
 function authorizeMailAccess_() {
   const quota = MailApp.getRemainingDailyQuota();
   Logger.log("Mail quota: " + quota);
@@ -23,11 +29,35 @@ function sendTestMail_() {
   });
 }
 
+// ─── Haupt-Endpunkt ───────────────────────────────────────────────────────────
 function doPost(e) {
+  // Rate-Limiting: max. 1 gleichzeitiger Request, verhindert Doppelbestellungen
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(8000)) {
+    return jsonResponse_({ ok: false, error: "Server beschäftigt – bitte erneut versuchen." });
+  }
+
   try {
     const payload = JSON.parse(e.postData.contents || "{}");
-    const orderId = payload.orderId || createOrderId_();
+
+    // ── Serverseitige Validierung ──────────────────────────────────────────
+    if (!String(payload.buyerName || "").trim()) {
+      return jsonResponse_({ ok: false, error: "Name fehlt." });
+    }
+    if (!isValidEmail_(payload.buyerEmail)) {
+      return jsonResponse_({ ok: false, error: "Ungültige E-Mail-Adresse." });
+    }
+    if (!Array.isArray(payload.items) || payload.items.length === 0) {
+      return jsonResponse_({ ok: false, error: "Warenkorb ist leer." });
+    }
+
+    // ── Order-ID immer serverseitig erzeugen – nie vom Client übernehmen ──
+    const orderId = createOrderId_();
+
+    // ── Bestellung speichern ───────────────────────────────────────────────
     const rowNumber = writeOrderToSheet_(orderId, payload);
+
+    // ── Benachrichtigungen (Fehler werden abgefangen, nicht weitergereicht) ─
     const adminEmailStatus = runSafely_(function() {
       sendAdminEmail_(orderId, payload);
       return "OK";
@@ -41,7 +71,13 @@ function doPost(e) {
       return NTFY_TOPIC_URL ? "OK" : "DEAKTIVIERT";
     });
 
+    // ── Status erst nach allen Schritten ins Sheet schreiben ──────────────
     updateDeliveryStatus_(rowNumber, adminEmailStatus, customerEmailStatus, phoneStatus);
+
+    Logger.log("Bestellung verarbeitet: " + orderId +
+      " | Admin-Mail: " + adminEmailStatus +
+      " | Kunden-Mail: " + customerEmailStatus +
+      " | Push: " + phoneStatus);
 
     return jsonResponse_({
       ok: true,
@@ -51,14 +87,17 @@ function doPost(e) {
       customerEmailStatus: customerEmailStatus,
       phoneStatus: phoneStatus
     });
+
   } catch (error) {
-    return jsonResponse_({
-      ok: false,
-      error: String(error)
-    });
+    Logger.log("Fehler in doPost: " + String(error));
+    return jsonResponse_({ ok: false, error: String(error) });
+
+  } finally {
+    lock.releaseLock();
   }
 }
 
+// ─── Sheet-Operationen ────────────────────────────────────────────────────────
 function writeOrderToSheet_(orderId, payload) {
   const sheet = getSheet_();
   const items = payload.items || [];
@@ -93,7 +132,7 @@ function writeOrderToSheet_(orderId, payload) {
   }
 
   sheet.appendRow([
-    payload.timestamp || new Date().toISOString(),
+    new Date().toISOString(),   // Zeitstempel immer serverseitig – nie vom Client
     orderId,
     payload.buyerName || "",
     payload.buyerEmail || "",
@@ -101,9 +140,7 @@ function writeOrderToSheet_(orderId, payload) {
     payload.initials || "",
     payload.notes || "",
     itemSummary,
-    items.reduce(function(sum, item) {
-      return sum + Number(item.qty || 0);
-    }, 0),
+    items.reduce(function(sum, item) { return sum + Number(item.qty || 0); }, 0),
     payload.totals?.subtotal || 0,
     payload.totals?.initialsCost || 0,
     payload.totals?.total || 0,
@@ -113,8 +150,7 @@ function writeOrderToSheet_(orderId, payload) {
   ]);
 
   const lastRow = sheet.getLastRow();
-  const summaryRange = sheet.getRange(lastRow, 8);
-  summaryRange.setWrap(true);
+  sheet.getRange(lastRow, 8).setWrap(true);
   return lastRow;
 }
 
@@ -127,20 +163,14 @@ function updateDeliveryStatus_(rowNumber, adminEmailStatus, customerEmailStatus,
   ]]);
 }
 
+// ─── E-Mails ──────────────────────────────────────────────────────────────────
 function sendAdminEmail_(orderId, payload) {
-  if (!ADMIN_EMAIL) {
-    return;
-  }
-
-  const subject = "Neue Shop-Bestellung: " + orderId;
-  const body = buildPlainTextSummary_(orderId, payload);
-  const htmlBody = buildHtmlSummary_(orderId, payload, true);
-
+  if (!ADMIN_EMAIL) return;
   MailApp.sendEmail({
     to: ADMIN_EMAIL,
-    subject: subject,
-    body: body,
-    htmlBody: htmlBody,
+    subject: "Neue Shop-Bestellung: " + orderId,
+    body: buildPlainTextSummary_(orderId, payload),
+    htmlBody: buildHtmlSummary_(orderId, payload, true),
     replyTo: REPLY_TO_EMAIL,
     name: "SSV Shop"
   });
@@ -148,15 +178,9 @@ function sendAdminEmail_(orderId, payload) {
 
 function sendCustomerEmail_(orderId, payload) {
   const customerEmail = String(payload.buyerEmail || "").trim();
-  if (!customerEmail) {
-    throw new Error("Keine Kunden-E-Mail übergeben.");
-  }
+  if (!customerEmail) throw new Error("Keine Kunden-E-Mail übergeben.");
+  if (!isValidEmail_(customerEmail)) throw new Error("Ungültige Kunden-E-Mail: " + customerEmail);
 
-  if (!isValidEmail_(customerEmail)) {
-    throw new Error("Ungültige Kunden-E-Mail: " + customerEmail);
-  }
-
-  const subject = "Deine SSV-Shop-Bestellung " + orderId;
   const body = [
     "Hallo " + (payload.buyerName || ""),
     "",
@@ -168,22 +192,19 @@ function sendCustomerEmail_(orderId, payload) {
     "SSV Vogelstang Volleyball"
   ].join("\n");
 
-  const htmlBody = buildHtmlSummary_(orderId, payload, false);
-
   MailApp.sendEmail({
     to: customerEmail,
-    subject: subject,
+    subject: "Deine SSV-Shop-Bestellung " + orderId,
     body: body,
-    htmlBody: htmlBody,
+    htmlBody: buildHtmlSummary_(orderId, payload, false),
     replyTo: REPLY_TO_EMAIL,
     name: "SSV Shop"
   });
 }
 
+// ─── Push-Benachrichtigung ────────────────────────────────────────────────────
 function sendPhoneNotification_(orderId, payload) {
-  if (!NTFY_TOPIC_URL) {
-    return;
-  }
+  if (!NTFY_TOPIC_URL) return;
 
   const itemCount = (payload.items || []).reduce(function(sum, item) {
     return sum + Number(item.qty || 0);
@@ -209,6 +230,7 @@ function sendPhoneNotification_(orderId, payload) {
   });
 }
 
+// ─── E-Mail-Templates ─────────────────────────────────────────────────────────
 function buildPlainTextSummary_(orderId, payload) {
   const itemLines = (payload.items || []).map(function(item) {
     return [
@@ -296,12 +318,11 @@ function buildHtmlSummary_(orderId, payload, includeCustomerLine) {
   );
 }
 
+// ─── Infrastruktur ────────────────────────────────────────────────────────────
 function getSheet_() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = spreadsheet.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    sheet = spreadsheet.insertSheet(SHEET_NAME);
-  }
+  if (!sheet) sheet = spreadsheet.insertSheet(SHEET_NAME);
   return sheet;
 }
 
@@ -357,6 +378,7 @@ function runSafely_(fn) {
   try {
     return fn();
   } catch (error) {
+    Logger.log("runSafely_ Fehler: " + String(error));
     return "FEHLER: " + String(error);
   }
 }

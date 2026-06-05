@@ -109,4 +109,3 @@ Sinnvolle nächste Schritte:
 - echtes Bestell-Feedback nach erfolgreicher Server-Antwort
 - Bearbeiten von Mengen direkt im Warenkorb
 - Mehr initialien pro Bestellung
-
