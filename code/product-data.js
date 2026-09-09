@@ -1,4 +1,4 @@
-const APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycby2swd521tBPFzH1wBejZzdDdlsHrxv_-cbH2z9fBb-7uPcTM3soreUkrUt0a1NlkgZaQ/exec";
+const APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycby995WkuaVPmH70Fy5H8U_rY4L98md-qDfq2RAD6fZQ5EOCbf4tS1m5lH7PXAoo_JQaTQ/exec";
 const INITIALS_PRICE = 1.5;
 const CART_STORAGE_KEY = "ssv-shop-cart";
 
@@ -8,8 +8,8 @@ const PRODUCTS = [
     slug: "lead-zip-jacket",
     name: "Hummel Lead 2.0 Track Zip Jacket",
     category: "Jacke",
-    tagline: "Trainingsjacke mit cleanem Team-Look",
-    description: "Die Track Zip Jacket ist die klassische Teamjacke für Anreise, Hallenrand und Trainingsalltag. Sie ist auf einen sportlichen, einheitlichen Vereinsauftritt ausgelegt.",
+    tagline: "Atmungsaktive Trainingsjacke",
+    description: "Die Track Zip Jacket ist eine klassische Teamjacke für Spieltage und Trainingsaltag. Sie ist auf einen sportlichen, einheitlichen Vereinsauftritt ausgelegt. Sie besitzt einen durchgehenden Frontreißverschluss und Jackentaschen mit Reißverschluss.",
     details: [
       "Ideal als Teamjacke für Spieltage und Warm-up.",
       "Kinder- und Erwachsenengrößen verfügbar.",
@@ -34,12 +34,12 @@ const PRODUCTS = [
     slug: "lead-track-pants",
     name: "Hummel Lead 2.0 Track Pants",
     category: "Hose",
-    tagline: "Passende Teamhose für Training und Spieltag",
-    description: "Die Track Pants ergänzen die Vereinsjacke zu einem einheitlichen Trainingsanzug. Sie sind für Alltag und Aufwärmen gedacht.",
+    tagline: "Passende Teamhose für Trainingsalltag und Spieltag",
+    description: "Die Track Pants ergänzen die Vereinsjacke zu einem einheitlichen Trainingsanzug. Sie ist für Trainingsalltag und Spieltage gedacht. Sie hat Reißverschlusstaschen und einen Reißverschluss am Beinabschluss.",
     details: [
-      "Stimmiger Look zusammen mit der Track Zip Jacket.",
-      "Praktisch für Training, Anreise und Teamausstattung.",
-      "Mit Initialen oder kleiner Nummer bestellbar."
+      "Stimmiger Look mit den Jacken",
+      "Atmungsaktiv",
+      "Mit Initialen bestellbar."
     ],
     colors: ["Schwarz"],
     sizes: {
@@ -60,8 +60,8 @@ const PRODUCTS = [
     slug: "lead-zip-hoodie",
     name: "Hummel Lead 2.0 Zip Hoodie",
     category: "Hoodie",
-    tagline: "Sportlicher Zip Hoodie für Team und Freizeit",
-    description: "Der Zip Hoodie verbindet Vereinslook und Alltagstauglichkeit. Er eignet sich für kühlere Hallentage, Fahrten und ein geschlossenes Auftreten der Teams.",
+    tagline: "Atmungsaktive Trainingsjacke mit Kapuze",
+    description: "Der Zip Hoodie ist eine klassische Teamjacke für Spieltage und Trainingsalltag. Sie ist auf einen sportlichen, einheitlichen Vereinsauftritt ausgelegt. Sie besitzt einen durchgehenden Frontreißverschluss und Jackentaschen mit Reißverschluss. An den Ärmelbündchen hat der Zip Hoodie „Daumenlöcher“",
     details: [
       "Mit Reißverschluss für flexibles Layering.",
       "Geeignet für Jugend- und Erwachsenenbereiche.",
@@ -73,8 +73,8 @@ const PRODUCTS = [
       "Erwachsene": ["S", "M", "L", "XL", "XXL", "3XL"]
     },
     priceByGroup: { "Kinder": 41.0, "Erwachsene": 44.0 },
-    materials: "Sweat-Mix mit sportlicher Oberfläche",
-    fit: "Bequeme Regular Fit",
+    materials: "Polyester-Funktionsmaterial",
+    fit: "Fällt größer aus",
     initialsPossible: true,
     images: [
       { src: "media/products/kapuzenjacke_vorne_bk.jpg", alt: "Hummel Lead 2.0 Zip Hoodie Vorderansicht" },
@@ -87,7 +87,7 @@ const PRODUCTS = [
     name: "Hummel GO 2.0 Hoodie",
     category: "Hoodie",
     tagline: "Klassischer Vereins-Hoodie in Schwarz",
-    description: "Der GO Hoodie ist für alle gedacht, die einen lässigen Teamartikel für Training, Freizeit und Vereinsauftritte suchen.",
+    description: "Der GO Hoodie ist eine Alternative zu den klassischen Trainingsjacken. Er hat eine „Beuteltasche“ und eine Kapuze mit Zugschnur.",
     details: [
       "Beliebter Basic-Hoodie für den Vereinsalltag.",
       "Schlicht, teamfähig und leicht kombinierbar.",
@@ -112,8 +112,8 @@ const PRODUCTS = [
     slug: "go-tshirt",
     name: "Hummel GO 2.0 T-Shirt",
     category: "T-Shirt",
-    tagline: "Vielseitiges Teamshirt in Schwarz oder Rot",
-    description: "Das GO T-Shirt ist eine unkomplizierte Basis für Training, Jugendteams und Vereinsaktionen. Durch zwei Farboptionen bleibt die Auswahl flexibel.",
+    tagline: "Basic Team-Shirt in schwarz oder rot",
+    description: "Das Go T-Shirt ist ein Basic-Vereinsshirt für Training, Spieltage und Vereinsaktionen. Durch zwei Farboptionen bleibt die Auswahl flexibel.",
     details: [
       "In Schwarz und Rot bestellbar.",
       "Geeignet für Training.",
@@ -125,8 +125,8 @@ const PRODUCTS = [
       "Erwachsene": ["S", "M", "L", "XL", "XXL", "3XL"]
     },
     priceByGroup: { "Kinder": 15.5, "Erwachsene": 17.0 },
-    materials: "Leichtes Sportshirt",
-    fit: "Athletische Standardpassform",
+    materials: "Baumwolle",
+    fit: "regular – fällt etwas größer aus",
     initialsPossible: true,
     images: [
       { src: "media/products/bw_tshirt_vorne_bk.jpg", alt: "Hummel GO 2.0 T-Shirt Vorderansicht Schwarz" },
@@ -140,12 +140,12 @@ const PRODUCTS = [
     slug: "essential-poly-tshirt",
     name: "Hummel Essential Polyester T-Shirt",
     category: "T-Shirt",
-    tagline: "Leichtes Performance-Shirt für Trainingseinheiten",
-    description: "Das Essential Polyester T-Shirt ist auf Bewegung und unkomplizierte Pflege ausgelegt. Es eignet sich besonders für regelmäßiges Hallentraining.",
+    tagline: "Funktions-Shirt zum Aufwärmen und für Trainingseinheiten",
+    description: "Das Essential-Shirt ist ein Basic-Vereinsshirt für Training, Spieltage und Vereinsaktionen. Durch zwei Farboptionen bleibt die Auswahl flexibel.",
     details: [
-      "Funktionaler Trainingsartikel mit großem Größenspektrum.",
-      "In Schwarz und Rot verfügbar.",
-      "Optional mit Initialen oder kleiner Nummer."
+      "In Schwarz und Rot bestellbar.",
+      "Geeignet für Training.",
+      "Personalisierung mit Initialen möglich."
     ],
     colors: ["Schwarz", "Rot"],
     sizes: {
@@ -154,7 +154,7 @@ const PRODUCTS = [
     },
     priceByGroup: { "Kinder": 15.0, "Erwachsene": 15.5 },
     materials: "Polyester-Funktionsmaterial",
-    fit: "Leichte Trainingspassform",
+    fit: "fällt groß aus",
     initialsPossible: true,
     images: [
       { src: "media/products/funktionsshirt_vorne_bk.jpg", alt: "Hummel Essential Polyester T-Shirt Vorderansicht Schwarz"},
