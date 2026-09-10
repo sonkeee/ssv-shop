@@ -71,6 +71,16 @@ img {
   text-decoration: none;
 }
 
+.site-footer {
+  padding: 18px 0 28px;
+  text-align: center;
+}
+
+.version-note {
+  font-size: 0.78rem;
+  color: #9aa0a6;
+}
+
 .header-with-banner {
   position: relative;
   overflow: hidden;
