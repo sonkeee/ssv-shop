@@ -11,6 +11,149 @@ const REPLY_TO_EMAIL =
   _PROPS.getProperty("REPLY_TO_EMAIL") || "webshop@ssv-volleyball.de";
 const NTFY_TOPIC_URL = _PROPS.getProperty("NTFY_TOPIC_URL") || "";
 
+// ─── Produktkatalog (serverseitig) ────────────────────────────────────────────
+// WICHTIG: Preise, Größen und Farben sind absichtlich hier noch einmal
+// hinterlegt und nicht aus dem Request übernommen. Der Client (code/product-data.js)
+// ist nicht vertrauenswürdig – ohne diese Liste könnte jeder per direktem POST an
+// den Web-App-Endpunkt beliebige Preise/Artikel einreichen. Bei Änderungen an den
+// Produkten in code/product-data.js muss diese Liste manuell mitgepflegt werden.
+const INITIALS_PRICE = 1.5;
+const MAX_ITEMS_PER_ORDER = 40;
+const MAX_QTY_PER_ITEM = 20;
+
+const PRODUCT_CATALOG = [
+  {
+    id: "lead-zip-jacket",
+    name: "Hummel Lead 2.0 Track Zip Jacket",
+    colors: ["Schwarz"],
+    sizes: {
+      Kinder: ["140", "152", "164"],
+      Erwachsene: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
+    },
+    priceByGroup: { Kinder: 32.0, Erwachsene: 35.0 },
+    initialsPossible: true,
+  },
+  {
+    id: "lead-track-pants",
+    name: "Hummel Lead 2.0 Track Pants",
+    colors: ["Schwarz"],
+    sizes: {
+      Kinder: ["140", "152", "164"],
+      Erwachsene: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
+    },
+    priceByGroup: { Kinder: 24.0, Erwachsene: 27.0 },
+    initialsPossible: true,
+  },
+  {
+    id: "lead-zip-hoodie",
+    name: "Hummel Lead 2.0 Zip Hoodie",
+    colors: ["Schwarz"],
+    sizes: {
+      Kinder: ["140", "152", "164"],
+      Erwachsene: ["S", "M", "L", "XL", "XXL", "3XL"],
+    },
+    priceByGroup: { Kinder: 41.0, Erwachsene: 44.0 },
+    initialsPossible: true,
+  },
+  {
+    id: "go-hoodie",
+    name: "Hummel GO 2.0 Hoodie",
+    colors: ["Schwarz"],
+    sizes: {
+      Kinder: ["140", "152", "164"],
+      Erwachsene: ["S", "M", "L", "XL", "XXL", "3XL"],
+    },
+    priceByGroup: { Kinder: 38.0, Erwachsene: 41.0 },
+    initialsPossible: true,
+  },
+  {
+    id: "go-tshirt",
+    name: "Hummel GO 2.0 T-Shirt",
+    colors: ["Schwarz", "Rot"],
+    sizes: {
+      Kinder: ["140", "152", "164"],
+      Erwachsene: ["S", "M", "L", "XL", "XXL", "3XL"],
+    },
+    priceByGroup: { Kinder: 15.5, Erwachsene: 17.0 },
+    initialsPossible: true,
+  },
+  {
+    id: "essential-poly-tshirt",
+    name: "Hummel Essential Polyester T-Shirt",
+    colors: ["Schwarz", "Rot"],
+    sizes: {
+      Kinder: ["140", "152", "164"],
+      Erwachsene: ["S", "M", "L", "XL", "XXL", "3XL", "4XL"],
+    },
+    priceByGroup: { Kinder: 15.0, Erwachsene: 15.5 },
+    initialsPossible: true,
+  },
+];
+
+// ─── Validierung & Preisberechnung ────────────────────────────────────────────
+// Nimmt eine einzelne, ungeprüfte Artikel-Angabe aus dem Request entgegen und
+// gibt eine bereinigte Version zurück, bei der ausschließlich serverseitig
+// bekannte Werte verwendet werden (Name, Preis). Wirft einen Error bei
+// ungültigen/unbekannten Angaben, der dann als Fehlermeldung an den Client geht.
+function validateAndPriceItem_(rawItem) {
+  rawItem = rawItem || {};
+
+  const product = PRODUCT_CATALOG.find((p) => p.id === rawItem.id);
+  if (!product) {
+    throw new Error("Unbekannter Artikel: " + rawItem.id);
+  }
+
+  const group = String(rawItem.group || "");
+  const sizesForGroup = product.sizes[group];
+  if (!sizesForGroup) {
+    throw new Error(
+      "Ungültige Größen-Gruppe für " + product.name + ": " + group,
+    );
+  }
+
+  const size = String(rawItem.size || "");
+  if (sizesForGroup.indexOf(size) === -1) {
+    throw new Error("Ungültige Größe für " + product.name + ": " + size);
+  }
+
+  const color = String(rawItem.color || "");
+  if (product.colors.indexOf(color) === -1) {
+    throw new Error("Ungültige Farbe für " + product.name + ": " + color);
+  }
+
+  const qty = Math.floor(Number(rawItem.qty));
+  if (!Number.isFinite(qty) || qty < 1 || qty > MAX_QTY_PER_ITEM) {
+    throw new Error(
+      "Ungültige Menge für " + product.name + ": " + rawItem.qty,
+    );
+  }
+
+  // Initialen nur übernehmen, wenn der Artikel sie überhaupt anbietet.
+  const withInitials = Boolean(rawItem.withInitials) && product.initialsPossible;
+  const unitPrice = product.priceByGroup[group];
+
+  return {
+    id: product.id,
+    name: product.name,
+    group: group,
+    size: size,
+    color: color,
+    qty: qty,
+    withInitials: withInitials,
+    unitPrice: unitPrice,
+    lineSubtotal: unitPrice * qty,
+    initialsCost: withInitials ? INITIALS_PRICE * qty : 0,
+  };
+}
+
+// Verhindert Formula-Injection in Google Sheets: Werte, die mit =, +, -, @,
+// Tab oder Carriage-Return beginnen, würden Sheets sonst als Formel
+// interpretieren. Ein führendes Apostroph zwingt Sheets zur Text-Darstellung.
+function sanitizeForSheet_(value) {
+  const str = String(value == null ? "" : value);
+  return /^[=+\-@\t\r]/.test(str) ? "'" + str : str;
+}
+
 // ─── Hilfsfunktionen (Autorisierung / Test) ───────────────────────────────────
 function authorizeMailAccess_() {
   const quota = MailApp.getRemainingDailyQuota();
@@ -56,24 +199,55 @@ function doPost(e) {
     if (!Array.isArray(payload.items) || payload.items.length === 0) {
       return jsonResponse_({ ok: false, error: "Warenkorb ist leer." });
     }
+    if (payload.items.length > MAX_ITEMS_PER_ORDER) {
+      return jsonResponse_({
+        ok: false,
+        error: "Zu viele Artikel in einer Bestellung.",
+      });
+    }
+
+    // ── Artikel & Preise ausschließlich serverseitig bestimmen ────────────
+    // payload.items/payload.totals kommen vom Client und sind nicht
+    // vertrauenswürdig (z. B. manipulierte unitPrice/total). Ab hier wird
+    // nur noch mit validatedItems/totals weitergearbeitet.
+    let validatedItems;
+    try {
+      validatedItems = payload.items.map(validateAndPriceItem_);
+    } catch (validationError) {
+      return jsonResponse_({
+        ok: false,
+        error: String(validationError.message || validationError),
+      });
+    }
+
+    const totals = {
+      subtotal: validatedItems.reduce((s, item) => s + item.lineSubtotal, 0),
+      initialsCost: validatedItems.reduce((s, item) => s + item.initialsCost, 0),
+    };
+    totals.total = totals.subtotal + totals.initialsCost;
+
+    const securePayload = Object.assign({}, payload, {
+      items: validatedItems,
+      totals: totals,
+    });
 
     // ── Order-ID immer serverseitig erzeugen – nie vom Client übernehmen ──
     const orderId = createOrderId_();
 
     // ── Bestellung speichern ───────────────────────────────────────────────
-    const rowNumber = writeOrderToSheet_(orderId, payload);
+    const rowNumber = writeOrderToSheet_(orderId, securePayload);
 
     // ── Benachrichtigungen (Fehler werden abgefangen, nicht weitergereicht) ─
     const adminEmailStatus = runSafely_(function () {
-      sendAdminEmail_(orderId, payload);
+      sendAdminEmail_(orderId, securePayload);
       return "OK";
     });
     const customerEmailStatus = runSafely_(function () {
-      sendCustomerEmail_(orderId, payload);
+      sendCustomerEmail_(orderId, securePayload);
       return "OK";
     });
     const phoneStatus = runSafely_(function () {
-      sendPhoneNotification_(orderId, payload);
+      sendPhoneNotification_(orderId, securePayload);
       return NTFY_TOPIC_URL ? "OK" : "DEAKTIVIERT";
     });
 
@@ -156,11 +330,11 @@ function writeOrderToSheet_(orderId, payload) {
     sheet.appendRow([
       new Date().toISOString(), // Zeitstempel immer serverseitig – nie vom Client
       orderId,
-      payload.buyerName || "",
-      payload.buyerEmail || "",
-      payload.buyerTeam || "",
-      payload.initials || "",
-      payload.notes || "",
+      sanitizeForSheet_(payload.buyerName || ""),
+      sanitizeForSheet_(payload.buyerEmail || ""),
+      sanitizeForSheet_(payload.buyerTeam || ""),
+      sanitizeForSheet_(payload.initials || ""),
+      sanitizeForSheet_(payload.notes || ""),
       item.name || "",
       (item.group || "") + " / " + (item.size || ""),
       item.color || "",
