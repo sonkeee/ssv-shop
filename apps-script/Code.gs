@@ -2,10 +2,13 @@
 // Empfohlen für Produktion: In Apps Script → Projekteinstellungen →
 // Skript-Eigenschaften die Keys ADMIN_EMAIL, REPLY_TO_EMAIL und NTFY_TOPIC_URL
 // setzen. Die hier hinterlegten Werte dienen als Fallback.
-const SHEET_NAME    = "Bestellungen";
-const _PROPS        = PropertiesService.getScriptProperties();
-const ADMIN_EMAIL   = _PROPS.getProperty("ADMIN_EMAIL")    || "soenke.brauch@ssv-volleyball.de";
-const REPLY_TO_EMAIL = _PROPS.getProperty("REPLY_TO_EMAIL") || "soenke.brauch@ssv-volleyball.de";
+const SHEET_NAME = "Bestellungen";
+const _PROPS = PropertiesService.getScriptProperties();
+const ADMIN_EMAIL =
+  _PROPS.getProperty("ADMIN_EMAIL") ||
+  "webshop@ssv-volleyball.de,thomas.mueller@ssv-volleyball.de";
+const REPLY_TO_EMAIL =
+  _PROPS.getProperty("REPLY_TO_EMAIL") || "webshop@ssv-volleyball.de";
 const NTFY_TOPIC_URL = _PROPS.getProperty("NTFY_TOPIC_URL") || "";
 
 // ─── Hilfsfunktionen (Autorisierung / Test) ───────────────────────────────────
@@ -23,9 +26,9 @@ function sendTestMail_() {
     htmlBody: buildMailShell_(
       "SSV Shop Testmail",
       "<p style='margin:0 0 16px;'>Wenn du diese Mail bekommst, ist die Mail-Berechtigung korrekt aktiv.</p>",
-      false
+      false,
     ),
-    name: "SSV Shop"
+    name: "SSV Shop",
   });
 }
 
@@ -34,7 +37,10 @@ function doPost(e) {
   // Rate-Limiting: max. 1 gleichzeitiger Request, verhindert Doppelbestellungen
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(8000)) {
-    return jsonResponse_({ ok: false, error: "Server beschäftigt – bitte erneut versuchen." });
+    return jsonResponse_({
+      ok: false,
+      error: "Server beschäftigt – bitte erneut versuchen.",
+    });
   }
 
   try {
@@ -58,26 +64,37 @@ function doPost(e) {
     const rowNumber = writeOrderToSheet_(orderId, payload);
 
     // ── Benachrichtigungen (Fehler werden abgefangen, nicht weitergereicht) ─
-    const adminEmailStatus = runSafely_(function() {
+    const adminEmailStatus = runSafely_(function () {
       sendAdminEmail_(orderId, payload);
       return "OK";
     });
-    const customerEmailStatus = runSafely_(function() {
+    const customerEmailStatus = runSafely_(function () {
       sendCustomerEmail_(orderId, payload);
       return "OK";
     });
-    const phoneStatus = runSafely_(function() {
+    const phoneStatus = runSafely_(function () {
       sendPhoneNotification_(orderId, payload);
       return NTFY_TOPIC_URL ? "OK" : "DEAKTIVIERT";
     });
 
     // ── Status erst nach allen Schritten ins Sheet schreiben ──────────────
-    updateDeliveryStatus_(rowNumber, adminEmailStatus, customerEmailStatus, phoneStatus);
+    updateDeliveryStatus_(
+      rowNumber,
+      adminEmailStatus,
+      customerEmailStatus,
+      phoneStatus,
+    );
 
-    Logger.log("Bestellung verarbeitet: " + orderId +
-      " | Admin-Mail: " + adminEmailStatus +
-      " | Kunden-Mail: " + customerEmailStatus +
-      " | Push: " + phoneStatus);
+    Logger.log(
+      "Bestellung verarbeitet: " +
+        orderId +
+        " | Admin-Mail: " +
+        adminEmailStatus +
+        " | Kunden-Mail: " +
+        customerEmailStatus +
+        " | Push: " +
+        phoneStatus,
+    );
 
     return jsonResponse_({
       ok: true,
@@ -85,13 +102,11 @@ function doPost(e) {
       message: "Bestellung gespeichert.",
       adminEmailStatus: adminEmailStatus,
       customerEmailStatus: customerEmailStatus,
-      phoneStatus: phoneStatus
+      phoneStatus: phoneStatus,
     });
-
   } catch (error) {
     Logger.log("Fehler in doPost: " + String(error));
     return jsonResponse_({ ok: false, error: String(error) });
-
   } finally {
     lock.releaseLock();
   }
@@ -101,15 +116,17 @@ function doPost(e) {
 function writeOrderToSheet_(orderId, payload) {
   const sheet = getSheet_();
   const items = payload.items || [];
-  const itemSummary = items.map(function(item) {
-    return [
-      item.name || "",
-      (item.group || "") + " / " + (item.size || ""),
-      item.color || "",
-      "Menge " + (item.qty || 0),
-      item.withInitials ? "mit Initialen" : "ohne Initialen"
-    ].join(" | ");
-  }).join("\n");
+  const itemSummary = items
+    .map(function (item) {
+      return [
+        item.name || "",
+        (item.group || "") + " / " + (item.size || ""),
+        item.color || "",
+        "Menge " + (item.qty || 0),
+        item.withInitials ? "mit Initialen" : "ohne Initialen",
+      ].join(" | ");
+    })
+    .join("\n");
 
   if (sheet.getLastRow() === 0) {
     sheet.appendRow([
@@ -120,47 +137,62 @@ function writeOrderToSheet_(orderId, payload) {
       "Team",
       "Initialen",
       "Bemerkungen",
-      "Artikel-Zusammenfassung",
-      "Artikel-Anzahl",
+      "Artikel",
+      "Größe",
+      "Farbe",
+      "Anzahl",
+      "Initiale",
+      "Gesamt-Anzahl",
       "Zwischensumme",
       "Initialen-Kosten",
       "Gesamt",
       "Admin-Mail Status",
       "Kunden-Mail Status",
-      "Handy-Benachrichtigung Status"
+      "Handy-Benachrichtigung Status",
     ]);
   }
 
-  sheet.appendRow([
-    new Date().toISOString(),   // Zeitstempel immer serverseitig – nie vom Client
-    orderId,
-    payload.buyerName || "",
-    payload.buyerEmail || "",
-    payload.buyerTeam || "",
-    payload.initials || "",
-    payload.notes || "",
-    itemSummary,
-    items.reduce(function(sum, item) { return sum + Number(item.qty || 0); }, 0),
-    payload.totals?.subtotal || 0,
-    payload.totals?.initialsCost || 0,
-    payload.totals?.total || 0,
-    "",
-    "",
-    ""
-  ]);
+  items.forEach((item) => {
+    sheet.appendRow([
+      new Date().toISOString(), // Zeitstempel immer serverseitig – nie vom Client
+      orderId,
+      payload.buyerName || "",
+      payload.buyerEmail || "",
+      payload.buyerTeam || "",
+      payload.initials || "",
+      payload.notes || "",
+      item.name || "",
+      (item.group || "") + " / " + (item.size || ""),
+      item.color || "",
+      item.qty || 0,
+      item.withInitials ? "mit" : "ohne",
+      items.reduce(function (sum, item) {
+        return sum + Number(item.qty || 0);
+      }, 0),
+      payload.totals?.subtotal || 0,
+      payload.totals?.initialsCost || 0,
+      payload.totals?.total || 0,
+      "",
+      "",
+      ""
+    ]);
+  });
 
   const lastRow = sheet.getLastRow();
   sheet.getRange(lastRow, 8).setWrap(true);
   return lastRow;
 }
 
-function updateDeliveryStatus_(rowNumber, adminEmailStatus, customerEmailStatus, phoneStatus) {
+function updateDeliveryStatus_(
+  rowNumber,
+  adminEmailStatus,
+  customerEmailStatus,
+  phoneStatus,
+) {
   const sheet = getSheet_();
-  sheet.getRange(rowNumber, 13, 1, 3).setValues([[
-    adminEmailStatus,
-    customerEmailStatus,
-    phoneStatus
-  ]]);
+  sheet
+    .getRange(rowNumber, 17, 1, 3)
+    .setValues([[adminEmailStatus, customerEmailStatus, phoneStatus]]);
 }
 
 // ─── E-Mails ──────────────────────────────────────────────────────────────────
@@ -172,14 +204,15 @@ function sendAdminEmail_(orderId, payload) {
     body: buildPlainTextSummary_(orderId, payload),
     htmlBody: buildHtmlSummary_(orderId, payload, true),
     replyTo: REPLY_TO_EMAIL,
-    name: "SSV Shop"
+    name: "SSV Shop",
   });
 }
 
 function sendCustomerEmail_(orderId, payload) {
   const customerEmail = String(payload.buyerEmail || "").trim();
   if (!customerEmail) throw new Error("Keine Kunden-E-Mail übergeben.");
-  if (!isValidEmail_(customerEmail)) throw new Error("Ungültige Kunden-E-Mail: " + customerEmail);
+  if (!isValidEmail_(customerEmail))
+    throw new Error("Ungültige Kunden-E-Mail: " + customerEmail);
 
   const body = [
     "Hallo " + (payload.buyerName || ""),
@@ -189,7 +222,7 @@ function sendCustomerEmail_(orderId, payload) {
     buildPlainTextSummary_(orderId, payload),
     "",
     "Viele Grüße",
-    "SSV Vogelstang Volleyball"
+    "SSV Vogelstang Volleyball",
   ].join("\n");
 
   MailApp.sendEmail({
@@ -198,7 +231,7 @@ function sendCustomerEmail_(orderId, payload) {
     body: body,
     htmlBody: buildHtmlSummary_(orderId, payload, false),
     replyTo: REPLY_TO_EMAIL,
-    name: "SSV Shop"
+    name: "SSV Shop",
   });
 }
 
@@ -206,7 +239,7 @@ function sendCustomerEmail_(orderId, payload) {
 function sendPhoneNotification_(orderId, payload) {
   if (!NTFY_TOPIC_URL) return;
 
-  const itemCount = (payload.items || []).reduce(function(sum, item) {
+  const itemCount = (payload.items || []).reduce(function (sum, item) {
     return sum + Number(item.qty || 0);
   }, 0);
 
@@ -214,7 +247,7 @@ function sendPhoneNotification_(orderId, payload) {
     "Neue Bestellung",
     orderId,
     (payload.buyerName || "Unbekannt") + " · " + itemCount + " Artikel",
-    formatCurrency_(payload.totals?.total || 0)
+    formatCurrency_(payload.totals?.total || 0),
   ].join("\n");
 
   UrlFetchApp.fetch(NTFY_TOPIC_URL, {
@@ -222,24 +255,24 @@ function sendPhoneNotification_(orderId, payload) {
     contentType: "text/plain; charset=utf-8",
     payload: message,
     headers: {
-      "Title": "SSV Shop",
-      "Priority": "default",
-      "Tags": "shopping_bags"
+      Title: "SSV Shop",
+      Priority: "default",
+      Tags: "shopping_bags",
     },
-    muteHttpExceptions: true
+    muteHttpExceptions: true,
   });
 }
 
 // ─── E-Mail-Templates ─────────────────────────────────────────────────────────
 function buildPlainTextSummary_(orderId, payload) {
-  const itemLines = (payload.items || []).map(function(item) {
+  const itemLines = (payload.items || []).map(function (item) {
     return [
       "- " + item.name,
       item.group + " / " + item.size,
       item.color,
       "Menge " + item.qty,
       formatCurrency_(Number(item.unitPrice || 0) * Number(item.qty || 0)),
-      item.withInitials ? "mit Initialen" : "ohne Initialen"
+      item.withInitials ? "mit Initialen" : "ohne Initialen",
     ].join(" | ");
   });
 
@@ -256,37 +289,71 @@ function buildPlainTextSummary_(orderId, payload) {
     "",
     "Zwischensumme: " + formatCurrency_(payload.totals?.subtotal || 0),
     "Initialen: " + formatCurrency_(payload.totals?.initialsCost || 0),
-    "Gesamt: " + formatCurrency_(payload.totals?.total || 0)
-  ].filter(Boolean).join("\n");
+    "Gesamt: " + formatCurrency_(payload.totals?.total || 0),
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 function buildHtmlSummary_(orderId, payload, includeCustomerLine) {
-  const rows = (payload.items || []).map(function(item) {
-    return "<tr>" +
-      "<td style='padding:12px 10px;border-bottom:1px solid #ece7de;'>" + escapeHtml_(item.name || "") + "</td>" +
-      "<td style='padding:12px 10px;border-bottom:1px solid #ece7de;'>" + escapeHtml_((item.group || "") + " / " + (item.size || "")) + "</td>" +
-      "<td style='padding:12px 10px;border-bottom:1px solid #ece7de;'>" + escapeHtml_(item.color || "") + "</td>" +
-      "<td style='padding:12px 10px;border-bottom:1px solid #ece7de;'>" + escapeHtml_(String(item.qty || 0)) + "</td>" +
-      "<td style='padding:12px 10px;border-bottom:1px solid #ece7de;white-space:nowrap;'>" + escapeHtml_(formatCurrency_(Number(item.unitPrice || 0) * Number(item.qty || 0))) + "</td>" +
-      "</tr>";
-  }).join("");
+  const rows = (payload.items || [])
+    .map(function (item) {
+      return (
+        "<tr>" +
+        "<td style='padding:12px 10px;border-bottom:1px solid #ece7de;'>" +
+        escapeHtml_(item.name || "") +
+        "</td>" +
+        "<td style='padding:12px 10px;border-bottom:1px solid #ece7de;'>" +
+        escapeHtml_((item.group || "") + " / " + (item.size || "")) +
+        "</td>" +
+        "<td style='padding:12px 10px;border-bottom:1px solid #ece7de;'>" +
+        escapeHtml_(item.color || "") +
+        "</td>" +
+        "<td style='padding:12px 10px;border-bottom:1px solid #ece7de;'>" +
+        escapeHtml_(String(item.qty || 0)) +
+        "</td>" +
+        "<td style='padding:12px 10px;border-bottom:1px solid #ece7de;white-space:nowrap;'>" +
+        escapeHtml_(
+          formatCurrency_(Number(item.unitPrice || 0) * Number(item.qty || 0)),
+        ) +
+        "</td>" +
+        "</tr>"
+      );
+    })
+    .join("");
 
   const introText = includeCustomerLine
     ? "Es ist eine neue Bestellung im SSV-Shop eingegangen."
     : "deine Bestellung ist erfolgreich bei uns eingegangen.";
 
   const content = [
-    "<p style='margin:0 0 18px;font-size:16px;line-height:1.65;'>Hallo " + escapeHtml_(payload.buyerName || "") + ",</p>",
-    "<p style='margin:0 0 22px;font-size:15px;line-height:1.7;color:#4f5965;'>" + introText + "</p>",
+    "<p style='margin:0 0 18px;font-size:16px;line-height:1.65;'>Hallo " +
+      escapeHtml_(payload.buyerName || "") +
+      ",</p>",
+    "<p style='margin:0 0 22px;font-size:15px;line-height:1.7;color:#4f5965;'>" +
+      introText +
+      "</p>",
     "<div style='background:#f8f3ea;border:1px solid #ece2d2;border-radius:18px;padding:18px 20px;margin:0 0 24px;'>",
     "<div style='font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:#8b1629;font-weight:700;margin-bottom:8px;'>Bestellübersicht</div>",
     "<div style='font-size:15px;line-height:1.8;'>",
     "<strong>Bestellnummer:</strong> " + escapeHtml_(orderId) + "<br>",
     "<strong>Name:</strong> " + escapeHtml_(payload.buyerName || "") + "<br>",
-    (includeCustomerLine ? "<strong>E-Mail:</strong> " + escapeHtml_(payload.buyerEmail || "") + "<br>" : ""),
-    (payload.buyerTeam ? "<strong>Team:</strong> " + escapeHtml_(payload.buyerTeam) + "<br>" : ""),
-    (payload.initials ? "<strong>Initialen / Nummer:</strong> " + escapeHtml_(payload.initials) + "<br>" : ""),
-    (payload.notes ? "<strong>Bemerkung:</strong> " + escapeHtml_(payload.notes) + "<br>" : ""),
+    includeCustomerLine
+      ? "<strong>E-Mail:</strong> " +
+        escapeHtml_(payload.buyerEmail || "") +
+        "<br>"
+      : "",
+    payload.buyerTeam
+      ? "<strong>Team:</strong> " + escapeHtml_(payload.buyerTeam) + "<br>"
+      : "",
+    payload.initials
+      ? "<strong>Initialen / Nummer:</strong> " +
+        escapeHtml_(payload.initials) +
+        "<br>"
+      : "",
+    payload.notes
+      ? "<strong>Bemerkung:</strong> " + escapeHtml_(payload.notes) + "<br>"
+      : "",
     "</div>",
     "</div>",
     "<table style='width:100%;border-collapse:collapse;background:#ffffff;border-radius:18px;overflow:hidden;'>",
@@ -301,20 +368,30 @@ function buildHtmlSummary_(orderId, payload, includeCustomerLine) {
     "</table>",
     "<div style='margin-top:22px;background:#ffffff;border:1px solid #eee5d8;border-radius:18px;padding:18px 20px;'>",
     "<div style='display:block;font-size:15px;line-height:1.85;'>",
-    "<strong>Zwischensumme:</strong> " + escapeHtml_(formatCurrency_(payload.totals?.subtotal || 0)) + "<br>",
-    "<strong>Initialen / Nummern:</strong> " + escapeHtml_(formatCurrency_(payload.totals?.initialsCost || 0)) + "<br>",
-    "<strong>Gesamt:</strong> <span style='color:#8b1629;'>" + escapeHtml_(formatCurrency_(payload.totals?.total || 0)) + "</span>",
+    "<strong>Zwischensumme:</strong> " +
+      escapeHtml_(formatCurrency_(payload.totals?.subtotal || 0)) +
+      "<br>",
+    "<strong>Initialen / Nummern:</strong> " +
+      escapeHtml_(formatCurrency_(payload.totals?.initialsCost || 0)) +
+      "<br>",
+    "<strong>Gesamt:</strong> <span style='color:#8b1629;'>" +
+      escapeHtml_(formatCurrency_(payload.totals?.total || 0)) +
+      "</span>",
     "</div>",
     "</div>",
-    (!includeCustomerLine
+    !includeCustomerLine
       ? "<p style='margin:22px 0 0;font-size:14px;line-height:1.7;color:#4f5965;'>Wir melden uns bei dir, sobald die Sammelbestellung weiterbearbeitet wird. Bitte antworte bei Fragen einfach auf diese Mail.</p>"
-      : "<p style='margin:22px 0 0;font-size:14px;line-height:1.7;color:#4f5965;'>Diese Nachricht wurde automatisch aus dem Vereins-Shop versendet.</p>")
-  ].filter(Boolean).join("");
+      : "<p style='margin:22px 0 0;font-size:14px;line-height:1.7;color:#4f5965;'>Diese Nachricht wurde automatisch aus dem Vereins-Shop versendet.</p>",
+  ]
+    .filter(Boolean)
+    .join("");
 
   return buildMailShell_(
-    includeCustomerLine ? "Neue Bestellung im SSV-Shop" : "Danke für deine Bestellung",
+    includeCustomerLine
+      ? "Neue Bestellung im SSV-Shop"
+      : "Danke für deine Bestellung",
     content,
-    true
+    true,
   );
 }
 
@@ -327,17 +404,27 @@ function getSheet_() {
 }
 
 function createOrderId_() {
-  return "SSV-" + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd-HHmmss");
+  return (
+    "SSV-" +
+    Utilities.formatDate(
+      new Date(),
+      Session.getScriptTimeZone(),
+      "yyyyMMdd-HHmmss",
+    )
+  );
 }
 
 function formatCurrency_(value) {
-  return Utilities.formatString("%.2f EUR", Number(value || 0)).replace(".", ",");
+  return Utilities.formatString("%.2f EUR", Number(value || 0)).replace(
+    ".",
+    ",",
+  );
 }
 
 function jsonResponse_(payload) {
-  return ContentService
-    .createTextOutput(JSON.stringify(payload))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(payload)).setMimeType(
+    ContentService.MimeType.JSON,
+  );
 }
 
 function escapeHtml_(value) {
@@ -355,18 +442,24 @@ function buildMailShell_(headline, innerHtml, includeReplyFooter) {
     "<div style='max-width:760px;margin:0 auto;background:#fffdf9;border-radius:28px;overflow:hidden;box-shadow:0 18px 50px rgba(24,32,40,0.08);'>",
     "<div style='padding:28px 32px;background:linear-gradient(135deg,#8b1629 0%,#c41e3a 100%);color:#ffffff;'>",
     "<div style='font-size:12px;letter-spacing:0.1em;text-transform:uppercase;opacity:0.92;font-weight:700;'>SSV Vogelstang Volleyball</div>",
-    "<h1 style='margin:10px 0 0;font-size:28px;line-height:1.15;'>" + escapeHtml_(headline) + "</h1>",
+    "<h1 style='margin:10px 0 0;font-size:28px;line-height:1.15;'>" +
+      escapeHtml_(headline) +
+      "</h1>",
     "</div>",
     "<div style='padding:30px 32px 24px;'>" + innerHtml + "</div>",
     "<div style='padding:20px 32px 26px;background:#f7f2ea;border-top:1px solid #ece2d2;'>",
     "<div style='font-size:13px;line-height:1.7;color:#5b6470;'>",
     includeReplyFooter && REPLY_TO_EMAIL
-      ? "Fragen zu deiner Bestellung? Antworte einfach auf diese Mail oder schreibe an <a href='mailto:" + escapeHtml_(REPLY_TO_EMAIL) + "' style='color:#8b1629;text-decoration:none;font-weight:700;'>" + escapeHtml_(REPLY_TO_EMAIL) + "</a>."
+      ? "Fragen zu deiner Bestellung? Antworte einfach auf diese Mail oder schreibe an <a href='mailto:" +
+        escapeHtml_(REPLY_TO_EMAIL) +
+        "' style='color:#8b1629;text-decoration:none;font-weight:700;'>" +
+        escapeHtml_(REPLY_TO_EMAIL) +
+        "</a>."
       : "SSV Vogelstang Volleyball",
     "</div>",
     "</div>",
     "</div>",
-    "</div>"
+    "</div>",
   ].join("");
 }
 
