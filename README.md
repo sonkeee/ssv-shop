@@ -26,7 +26,7 @@ Die Website zeigt Produkte, Produktdetailseiten, einen gemeinsamen Warenkorb und
   - Initialen-Aufpreis
 - Warenkorb im `localStorage`
 - Direktes Feedback beim Hinzufügen zum Warenkorb
-- Link auf der Produktseite, der aktülle Auswahl direkt in den Warenkorb legt und zur Bestellung führt
+- Link auf der Produktseite, der die aktuelle Auswahl direkt in den Warenkorb legt und zur Bestellung führt
 - Checkout-Formular mit Versand an Google Apps Script
 - Speicherung der Bestellung in Google Sheets
 - Admin- und Kunden-E-Mail
@@ -53,7 +53,7 @@ Die wichtigsten Frontend-Konstanten stehen in `code/product-data.js`.
 - `INITIALS_PRICE`: Aufpreis pro Artikel mit Initialen
 - `CART_STORAGE_KEY`: Local-Storage-Key für den Warenkorb
 
-Neue Produkte werden ebenfalls in `code/product-data.js` gepflegt. Dort werden Name, Kategorie, Farben, Groessen, Bilder, Preise und Initialen-Option definiert.
+Neue Produkte werden ebenfalls in `code/product-data.js` gepflegt. Dort werden Name, Kategorie, Farben, Größen, Bilder, Preise und Initialen-Option definiert. **Wichtig:** Jede Änderung hier muss zusätzlich im serverseitigen `PRODUCT_CATALOG` in `apps-script/Code.gs` nachgezogen werden (siehe [Bestell-Backend einrichten](#bestell-backend-einrichten)), sonst validiert das Backend die Bestellung mit falschen bzw. veralteten Daten.
 
 ## Bestell-Backend einrichten
 
@@ -61,12 +61,22 @@ Das Backend liegt in `apps-script/Code.gs` und erwartet `POST`-Requests mit den 
 
 ### Konfiguration in `Code.gs`
 
-Folgende Konstanten sollten angepasst werden:
+Für die Produktion empfohlen: In Apps Script unter **Projekteinstellungen → Skript-Eigenschaften** folgende Keys setzen (die Werte in `Code.gs` dienen nur als Fallback, falls keine Skript-Eigenschaft gesetzt ist):
 
-- `SHEET_NAME`: Ziel-Tabelle für Bestellungen
-- `ADMIN_EMAIL`: Empfänger für Admin-Benachrichtigungen
+- `ADMIN_EMAIL`: Empfänger für Admin-Benachrichtigungen (kommagetrennt für mehrere Adressen)
 - `REPLY_TO_EMAIL`: Reply-To für versendete Mails
-- `NTFY_TOPIC_URL`: optionaler `ntfy`-Endpoint für Push-Nachrichten
+- `NTFY_TOPIC_URL`: optionaler `ntfy`-Endpoint für Push-Benachrichtigungen (leer lassen zum Deaktivieren)
+
+Direkt im Code angepasst werden können bei Bedarf:
+
+- `SHEET_NAME`: Ziel-Tabelle für Bestellungen (Standard: `"Bestellungen"`)
+- `MAX_ITEMS_PER_ORDER` / `MAX_QTY_PER_ITEM`: Obergrenzen zur Missbrauchsvermeidung
+
+### Serverseitiger Produktkatalog (`PRODUCT_CATALOG`)
+
+`Code.gs` enthält eine eigene Kopie des Produktkatalogs (Preise, Größen, Farben, Initialen-Aufpreis). Das ist bewusst so: der Client (`code/product-data.js`) ist nicht vertrauenswürdig, da sonst per direktem `POST` an den Web-App-Endpunkt beliebige Preise eingereicht werden könnten. Das Backend validiert und berechnet jede Bestellung ausschließlich anhand von `PRODUCT_CATALOG`.
+
+**Wichtig:** Bei jeder Änderung an Produkten, Preisen oder Initialen-Aufpreis in `code/product-data.js` muss `PRODUCT_CATALOG` in `apps-script/Code.gs` manuell nachgezogen werden, sonst werden Bestellungen mit falschen Preisen validiert oder abgelehnt.
 
 ### Erwartetes Verhalten
 
@@ -83,14 +93,14 @@ Beim Eingang einer Bestellung macht das Script Folgendes:
 
 1. Neues Google Apps Script Projekt anlegen.
 2. Inhalt aus `apps-script/Code.gs` übernehmen.
-3. `appsscript.json` mit den benoetigten Scopes hinterlegen.
+3. `appsscript.json` mit den benötigten Scopes hinterlegen.
 4. Mit einem Google Sheet verbinden.
 5. Als Web App deployen.
 6. Den Web-App-Link in `code/product-data.js` als `APPS_SCRIPT_ENDPOINT` eintragen.
 
 ## Datenfluss einer Bestellung
 
-1. Nutzer wählt Produkt, Groessengruppe, Groesse, Farbe, Menge und optional Initialen.
+1. Nutzer wählt Produkt, Größengruppe, Größe, Farbe, Menge und optional Initialen.
 2. Die Produktseite berechnet den aktuellen Preis live.
 3. Artikel wird dem Warenkorb im Browser hinzugefügt.
 4. Im Checkout werden Kontaktdaten eingegeben.
@@ -108,4 +118,4 @@ Sinnvolle nächste Schritte:
 
 - echtes Bestell-Feedback nach erfolgreicher Server-Antwort
 - Bearbeiten von Mengen direkt im Warenkorb
-- Mehr initialien pro Bestellung
+- mehrere Initialen pro Bestellung (z. B. bei mehreren Artikeln in einer Bestellung)
